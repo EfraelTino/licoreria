@@ -6,10 +6,10 @@ export type PostData = {
 export type UserData = {
     email: string;
     name: string;
-    lastname: string;
-    typeuser: string;
+    username: string;
+    role: string;
+    status: number;
     id: number;
-    iduser?: number;
 };
 
 export type Products = {

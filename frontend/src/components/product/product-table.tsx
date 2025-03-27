@@ -1,3 +1,4 @@
+{/**Using */ }
 import { Camera, Pencil, Plus, Trash2 } from "lucide-react"
 import { Button } from "../ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
@@ -13,7 +14,7 @@ import { Categories } from "@/lib/types"
 import { useState } from "react"
 import { postDatas, putData } from "@/api/api"
 import { postDataWithImage } from "@/api/api"
-
+import { PEN } from "@/lib/pen"
 type Product = {
     id?: number
     name: string
@@ -49,6 +50,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             description: "",
             stock: 0,
             image: null,
+            photo: null,
         })
         setIsFormOpen(true)
     }
@@ -98,7 +100,19 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             [name]: value,
         })
     }
-
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: "price" | "price_offert") => {
+        const rawValue = e.target.value.replace(/[^0-9.]/g, ""); // Solo números y punto
+        setInitialFormData({ ...initialFormData, [field]: rawValue }); // Guardar como string temporal
+    };
+    
+    const handlePriceBlur = (field: "price" | "price_offert") => {
+        const formattedPrice = PEN(initialFormData[field]?.toString() ?? "").format();
+        setInitialFormData({
+            ...initialFormData,
+            [field]: Number(formattedPrice.replace(/[^0-9.]/g, ""))
+        });
+    };
+    
     // Handle form submission
     const handleSubmit = async () => {
         if (currentProduct) {
@@ -114,13 +128,13 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     !initialFormData.idProduct
                 ) {
                     console.log(initialFormData)
-                    toast.error("Todos los campos son requeridossss");
+                    toast.error("Todos los campos son requeridossss", {position: "top-center"});
                     return;
                 }
                 console.log(initialFormData)
                 if (chandePhoto) {
                     if (!initialFormData.image) {
-                        toast.error("La imagen es requerida")
+                        toast.error("La imagen es requerida", {position: "top-center"}  )
 
                         return;
                     }
@@ -131,36 +145,38 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                             'Content-Type': 'multipart/form-data'
                         }
                     })
+                    console.log(responseImage)
                     console.log(initialFormData)
                     if (responseImage.success) {
-                        initialFormData.image = responseImage.message
+                        initialFormData.photo = responseImage.message
+                        console.log(initialFormData)
                         const updateProduct = await putData('actualizar-producto', initialFormData);
                         console.log(updateProduct)
                         if (updateProduct.success) {
-                            toast.success(updateProduct.message)
+                            toast.success(updateProduct.message, {position: "top-center"})
                             fetchProducts()
                             setIsFormOpen(false)
                         } else {
-                            toast.error(updateProduct.message)
+                            toast.error(updateProduct.message, {position: "top-center"})
                         }
 
                     } else {
-                        toast.error('Error al subir la imagen')
+                        toast.error('Error al subir la imagen', {position: "top-center"})
                     }
                 } else {
                     console.log(initialFormData)
                     const responseProduct = await putData('actualizar-producto', initialFormData)
                     if (responseProduct.success) {
-                        toast.success(responseProduct.message)
+                        toast.success(responseProduct.message, {position: "top-center"})
                         fetchProducts()
                         setIsFormOpen(false)
                     } else {
-                        toast.error(responseProduct.message)
+                        toast.error(responseProduct.message, {position: "top-center"})
                     }
                 }
             } catch (error) {
                 console.log(error)
-                toast.error('Error al actualizar el producto')
+                toast.error('Error al actualizar el producto', {position: "top-center"})
             } finally {
                 setLoading(false);
                 fetchCategories();
@@ -177,11 +193,11 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     !initialFormData.description ||
                     !initialFormData.image
                 ) {
-                    toast.error("Todos los campos son requeridos");
+                    toast.error("Todos los campos son requeridos", {position: "top-center"});
                     return;
                 }
                 if (initialFormData.price_offert && (initialFormData.price_offert ?? 0) > (initialFormData.price ?? 0)) {
-                    toast.error("El precio de oferta no puede ser mayor al precio");
+                    toast.error("El precio de oferta no puede ser mayor al precio", {position: "top-center"});
                     return;
                 }
 
@@ -201,18 +217,17 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     const responseProduct = await postDatas('crear-producto', initialFormData)
                     console.log(responseProduct)
                     if (responseProduct.success) {
-                        toast.success('Producto creado correctamente')
+                        toast.success('Producto creado correctamente', {position: "top-center"})
                         fetchProducts()
                         setIsFormOpen(false)
                     } else {
-                        toast.error('Error al crear el producto')
+                        toast.error('Error al crear el producto', {position: "top-center"})
                     }
                 } else {
-                    toast.error('Error al subir la imagen')
+                    toast.error('Error al subir la imagen', {position: "top-center"})
                 }
-            } catch (error) {
-                console.error("Error en la solicitud:", error);
-                toast.error("Error al crear el producto");
+            } catch  {
+                toast.error("Error al crear el producto", {position: "top-center"});
             } finally {
                 setLoading(false);
             }
@@ -220,16 +235,23 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
     };
     // Handle delete confirmation
     const handleDeleteConfirm = async () => {
-        if (productToDelete !== null) {
-            const responseDelete = await putData('eliminar-producto', { id: productToDelete })
-            if (responseDelete.success) {
-                toast.success(responseDelete.message)
-                fetchProducts()
-            } else {
-                toast.error(responseDelete.message)
+        try {
+            setLoading(true)
+            if (productToDelete !== null) {
+                const responseDelete = await putData('eliminar-producto', { id: productToDelete })
+                if (responseDelete.success) {
+                    toast.success(responseDelete.message, {position: "top-center"})
+                    fetchProducts()
+                } else {
+                    toast.error(responseDelete.message, {position: "top-center"}    )
+                }
+                setIsDeleteDialogOpen(false)
+                setProductToDelete(null)
             }
-            setIsDeleteDialogOpen(false)
-            setProductToDelete(null)
+        } catch  {
+            toast.error("Error al eliminar el producto", {position: "top-center"})
+        } finally {
+                setLoading(false);
         }
     }
 
@@ -247,77 +269,77 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                 </Button>
             </div>
 
-            <div className="rounded-md border">
+            <div className="">
                 {
-                    error ? <div className="flex justify-center"> {error} </div>: <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead><strong>#</strong></TableHead>
-                            <TableHead>Image</TableHead>
-                            <TableHead>Nombre</TableHead>
-                            <TableHead>Categoría</TableHead>
-                            <TableHead>Marca</TableHead>
-                            <TableHead>Precio</TableHead>
-                            <TableHead>Descripción</TableHead>
-                            <TableHead>Stock</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {
-                            loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="text-center">Cargando...</TableCell>
-                                </TableRow>
-                            ) : (
-                                productos.map((product, key) => (
-                                    <TableRow key={product.id}>
-                                        <TableCell><strong>{key + 1}</strong></TableCell>
-                                        <TableCell>
-                                            <img
-                                                src={`${api}${product?.photo}` || "placeholder.svg"}
-                                                alt={product.name}
-                                                className="h-10 w-10 rounded-md object-cover"
-                                            />
-                                        </TableCell>
-                                        <TableCell className="font-medium">{product.name}</TableCell>
-                                        <TableCell>{product.name_cat}</TableCell>
-                                        <TableCell><span className="capitalize">{product.name_brand}</span></TableCell>
-                                        <TableCell><p className="flex flex-col text-left">
-                                            {product.price_offert != 0 ? (
-                                                <>
-                                                    <span className="line-through text-gray-500 font-light">S/.{Number(product.price).toFixed(2)}
-                                                    </span>
-                                                    <span className="font-bold"> S/.{Number(product.price_offert).toFixed(2)}
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                <span className="font-bold">${Number(product.price).toFixed(2)}</span>
-                                            )}
-                                        </p></TableCell>
-                                        <TableCell>
-                                            <p className="text-left whitespace-nowrap text-ellipsis overflow-hidden max-w-[100px]">
-                                                {product.description}
-                                            </p>
-
-                                        </TableCell>
-                                        <TableCell>{product.stock}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button variant="outline" size="icon" onClick={() => handleEditProduct(product)}>
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="outline" size="icon" onClick={() => openDeleteDialog(product.id ?? 0)}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
+                    error ? <div className="flex justify-center py-2 text-red-500"> {error} </div> : <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead><strong>#</strong></TableHead>
+                                <TableHead>Image</TableHead>
+                                <TableHead>Nombre</TableHead>
+                                <TableHead>Categoría</TableHead>
+                                <TableHead>Marca</TableHead>
+                                <TableHead>Precio</TableHead>
+                                <TableHead>Descripción</TableHead>
+                                <TableHead>Stock</TableHead>
+                                <TableHead className="text-right">Acciones</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {
+                                loading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center py-2">Cargando...</TableCell>
                                     </TableRow>
-                                ))
-                            )
-                        }
-                    </TableBody>
-                </Table>
+                                ) : (
+                                    productos.map((product, key) => (
+                                        <TableRow key={product.id}>
+                                            <TableCell><strong>{key + 1}</strong></TableCell>
+                                            <TableCell>
+                                                <img
+                                                    src={`${api}${product?.photo}` || "placeholder.svg"}
+                                                    alt={product.name}
+                                                    className="h-10 w-10 rounded-md object-cover"
+                                                />
+                                            </TableCell>
+                                            <TableCell className="font-medium">{product.name}</TableCell>
+                                            <TableCell>{product.name_cat}</TableCell>
+                                            <TableCell><span className="capitalize">{product.name_brand}</span></TableCell>
+                                            <TableCell><p className="flex flex-col text-left">
+                                                {product.price_offert != 0 ? (
+                                                    <>
+                                                        <span className="line-through text-gray-500 font-light">S/.{Number(product.price).toFixed(2)}
+                                                        </span>
+                                                        <span className="font-bold"> S/.{Number(product.price_offert).toFixed(2)}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="font-bold">S/.{Number(product.price).toFixed(2)}</span>
+                                                )}
+                                            </p></TableCell>
+                                            <TableCell>
+                                                <p className="text-left whitespace-nowrap text-ellipsis overflow-hidden max-w-[100px]">
+                                                    {product.description}
+                                                </p>
+
+                                            </TableCell>
+                                            <TableCell>{product.stock}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button variant="outline" size="icon" onClick={() => handleEditProduct(product)}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="outline" size="icon" onClick={() => openDeleteDialog(product.id ?? 0)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )
+                            }
+                        </TableBody>
+                    </Table>
 
                 }
                 {/* Product Form Dialog */}
@@ -375,7 +397,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                         onValueChange={(value) => handleSelectChange(value, "id_category")}
                                     >
 
-x
+                                        
                                         <SelectTrigger>
                                             {/**
                                                  * CUANDO LE DEA A EDITAR EL PRODUCTO, EL SELECT NO DEBE ESTAR VACIO
@@ -433,22 +455,29 @@ x
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="price">Precio</Label>
-                                    <Input
-                                        id="price"
-                                        name="price"
-                                        type="number"
-                                        value={initialFormData.price?.toString() ?? ""}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="price_offert">Precio oferta</Label>
-                                    <Input id="price_offert" name="price_offert" type="number" value={initialFormData.price_offert?.toString() ?? ""} onChange={handleInputChange} />
-                                </div>
-
-                            </div>
+        <div className="space-y-2">
+            <Label htmlFor="price">Precio</Label>
+            <Input
+                id="price"
+                name="price"
+                type="text"
+                value={initialFormData.price?.toString() ?? ""}
+                onChange={(e) => handlePriceChange(e, "price")}
+                onBlur={() => handlePriceBlur("price")}
+            />
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="price_offert">Precio oferta</Label>
+            <Input
+                id="price_offert"
+                name="price_offert"
+                type="text"
+                value={initialFormData.price_offert?.toString() ?? ""}
+                onChange={(e) => handlePriceChange(e, "price_offert")}
+                onBlur={() => handlePriceBlur("price_offert")}
+            />
+        </div>
+    </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="description">Descripción</Label>
@@ -461,11 +490,11 @@ x
                                 />
                             </div>
                         </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsFormOpen(false)}>
+                        <DialogFooter className="gap-2">
+                            <Button  variant="outline" onClick={() => setIsFormOpen(false)}>
                                 Cancelar
                             </Button>
-                            <Button onClick={handleSubmit}>{currentProduct ? "Actualizar" : "Agregar"}</Button>
+                            <Button disabled={loading}   onClick={handleSubmit}>{currentProduct ? "Actualizar" : "Agregar"}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -480,7 +509,7 @@ x
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDeleteConfirm}>Eliminar</AlertDialogAction>
+                            <AlertDialogAction disabled={loading} onClick={handleDeleteConfirm}>Eliminar</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>

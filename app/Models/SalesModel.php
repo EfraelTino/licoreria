@@ -9,6 +9,7 @@ class SalesModel
     public function __construct($db)
     {
         $this->db = $db;
+        date_default_timezone_set('America/Bogota');
     }
     public function createSale($data)
     {
@@ -273,14 +274,16 @@ class SalesModel
     public function abrirCaja($datos)
     {
         try {
+            $fechaColombia = date('Y-m-d H:i:s');
             $stmt = $this->db->prepare(
-                "INSERT INTO cash_registers (user_id, opening_balance, status) 
-                VALUES (?, ?, 'Abierta')"
+                "INSERT INTO cash_registers (user_id, opening_balance, status, created_at) 
+                VALUES (?, ?, 'Abierta', ?)"
             );
 
             $stmt->execute([
                 $datos['usuario_id'],
-                $datos['monto_inicial']
+                $datos['monto_inicial'],
+                $fechaColombia
             ]);
 
             return $this->db->lastInsertId();
@@ -288,7 +291,13 @@ class SalesModel
             throw $e;
         }
     }
-
+    //listar cajas
+    public function listarCajas()
+    {
+        $stmt = $this->db->prepare("SELECT cash_registers.*, users.name, users.role FROM cash_registers INNER JOIN users ON cash_registers.user_id = users.id ORDER BY cash_registers.created_at DESC");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     // Cerrar caja
     public function cerrarCaja($datos)
     {
@@ -305,7 +314,6 @@ class SalesModel
                 $datos['monto_final'],
                 $datos['caja_id']
             ]);
-
             return $stmt->rowCount() > 0;
         } catch (\Exception $e) {
             throw $e;
@@ -313,33 +321,12 @@ class SalesModel
     }
 
     // Obtener movimientos de caja
-    public function obtenerMovimientosCaja($cajaId = null, $fecha = null)
+    public function obtenerMovimientosCaja()
     {
         try {
-            $sql = "SELECT cm.*, 
-                          u.name as usuario_nombre, 
-                          s.id as venta_numero 
-                   FROM cash_movements cm
-                   JOIN users u ON cm.user_id = u.id
-                   LEFT JOIN sales s ON cm.sale_id = s.id
-                   WHERE 1=1";
-
-            $params = [];
-
-            if ($cajaId) {
-                $sql .= " AND cm.cash_register_id = ?";
-                $params[] = $cajaId;
-            }
-
-            if ($fecha) {
-                $sql .= " AND DATE(cm.created_at) = ?";
-                $params[] = $fecha;
-            }
-
-            $sql .= " ORDER BY cm.created_at DESC";
-
+            $sql = "SELECT * FROM cash_movements ORDER BY created_at DESC";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
+            $stmt->execute();
 
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
@@ -348,31 +335,13 @@ class SalesModel
     }
 
     // Obtener estado actual de la caja
-    public function   obtenerEstadoCaja($usuarioId = null)
+    public function   obtenerEstadoCaja()
     {
         try {
-            $sql = "SELECT cr.*, 
-                          u.name as usuario_nombre,
-                          (SELECT SUM(CASE WHEN type = 'Ingreso' THEN amount ELSE -amount END) 
-                           FROM cash_movements 
-                           WHERE created_at BETWEEN cr.created_at AND COALESCE(cr.closed_at, NOW())
-                          ) as balance_actual
-                   FROM cash_registers cr
-                   JOIN users u ON cr.user_id = u.id
-                   WHERE cr.status = 'Abierta'";
-
-            $params = [];
-
-            if ($usuarioId) {
-                $sql .= " AND cr.user_id = ?";
-                $params[] = $usuarioId;
-            }
-
-            $sql .= " ORDER BY cr.created_at DESC LIMIT 1";
-
+            $sql = "SELECT * FROM cash_registers WHERE status = 'Abierta' ORDER BY created_at DESC LIMIT 1";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
-
+            $stmt->execute();
+    
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
             throw $e;

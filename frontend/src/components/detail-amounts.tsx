@@ -45,7 +45,7 @@ export function DetailAmounts() {
     const totalAmount = montoEfectivo + montoTarjeta;
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {
                     loading ? 'cargando...' : error ? <p>{error}</p> : <>
 
@@ -60,7 +60,7 @@ export function DetailAmounts() {
                                         <BanknoteIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                                         <span className="text-2xl font-bold">S/.{montoEfectivo.toFixed(2)}</span>
                                     </div>
-                                    <span className="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">+S/ {montoEfectivo.toFixed(2)} hoy</span>
+                                    <span className=" text-green-600 bg-green-100 px-2 py-1 text-xs lg:text-sm rounded-full">+S/ {montoEfectivo.toFixed(2)} hoy</span>
                                 </div>
                             </CardContent>
                         </Card>
@@ -76,7 +76,7 @@ export function DetailAmounts() {
                                         <CreditCardIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                                         <span className="text-2xl font-bold">S/.{montoTarjeta.toFixed(2)}</span>
                                     </div>
-                                    <span className="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">+S/ {montoTarjeta.toFixed(2)} hoy</span>
+                                    <span className=" text-green-600 bg-green-100 px-2 py-1 text-xs lg:text-sm rounded-full">+S/ {montoTarjeta.toFixed(2)} hoy</span>
                                 </div>
                             </CardContent>
                         </Card>
@@ -92,7 +92,7 @@ export function DetailAmounts() {
                                         <DollarSign className="mr-2 h-4 w-4 text-muted-foreground" />
                                         <span className="text-2xl font-bold">S/.{totalAmount.toFixed(2)}</span>
                                     </div>
-                                    <span className="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">+S/ {totalAmount.toFixed(2)} hoy</span>
+                                    <span className=" text-green-600 bg-green-100 px-2 py-1 text-xs lg:text-sm rounded-full">+S/ {totalAmount.toFixed(2)} hoy</span>
                                 </div>
                             </CardContent>
                         </Card></>

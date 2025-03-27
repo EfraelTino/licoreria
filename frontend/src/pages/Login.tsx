@@ -1,4 +1,4 @@
-import { login as loginApi } from '@/api/api'
+import { postDatas } from '@/api/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -26,6 +26,7 @@ export const Login = () => {
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
     if(email === '' || password === ''){
       toast.error('Email y contraseña son requeridos',{
+        position: "top-center",
         cancel:{
           label: 'Cerrar',
           onClick: () => {
@@ -37,10 +38,8 @@ export const Login = () => {
       return
     }
    try {
-    const response = await loginApi(email, password)
-    console.log(response)
-    console.log("Login submitted")
-    console.log(logindata)
+    const response = await postDatas('login', {email, password})
+
     if(response.success){
       console.log(response.userdata)
       logindata(response.token, response.userdata)
@@ -48,6 +47,7 @@ export const Login = () => {
       return;
     }
     toast.error(response.error,{
+      position: "top-center",
       cancel:{
         label: 'Cerrar',
         onClick: () => {
@@ -57,7 +57,7 @@ export const Login = () => {
       }
     })
    } catch  {
-    toast.error('Erorr intentanto iniciar sesión')
+    toast.error('Erorr intentanto iniciar sesión', {position: "top-center"})
    }finally{
     setLoading(false)
    }

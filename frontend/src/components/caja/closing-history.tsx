@@ -1,4 +1,4 @@
-"use client"
+{/**Using -> */ }
 
 import { postDatas } from "@/api/api";
 import { Button } from "@/components/ui/button";

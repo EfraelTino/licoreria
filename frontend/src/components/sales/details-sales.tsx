@@ -1,4 +1,4 @@
-import { Building2, CalendarDays, Download, FileText, Mail, Phone, User } from "lucide-react"
+import { Building2, CalendarDays, Download, FileText, Mail, Phone, User, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -26,6 +26,7 @@ type Venta = {
     id: number
     created_at?: string
     total: number
+    payment_method: number
 }
 type Cliente = {
     id: number
@@ -160,15 +161,22 @@ export default function DetailsSales() {
                                             <div className="text-sm font-medium">
                                                 <div className=" flex items-center">
                                                     <User className="h-4 w-4 mr-1" />
-                                                    {data?.cliente?.name}
+                                                   <strong>Nombre: </strong> {data?.cliente?.name}
                                                 </div>
                                                 <div className="flex items-center mt-1">
                                                     <Mail className="h-4 w-4 mr-1" />
-                                                    {data?.cliente?.email}
+                                                    <strong>Email: </strong> {data?.cliente?.email}
                                                 </div>
                                                 <div className="flex items-center mt-1">
                                                     <Phone className="h-4 w-4 mr-1" />
-                                                    {data?.cliente?.phone}
+                                                    <strong>Teléfono: </strong> {data?.cliente?.phone}
+                                                </div>
+                                                <div className="flex items-center mt-1">
+                                                    <CreditCard className="h-4 w-4 mr-1" />
+                                                    <strong>Método pago: </strong> 
+                                                    {
+                                                        data?.venta?.payment_method === 1 ? " Efectivo " : data?.venta?.payment_method === 2 ? " Yape " : data?.venta?.payment_method === 3 ? " Plin " : data?.venta?.payment_method === 4 ? " Transferencia " : " Otro "
+                                                    }
                                                 </div>
                                             </div>
                                         </div>

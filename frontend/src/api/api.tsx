@@ -32,3 +32,7 @@ export const putData = async (url: string, data: PostData) => {
   const response = await axios.put(`${api}${url}`, data);
   return response.data;
 };
+export const patchData = async (url: string, data: PostData) => {
+  const response = await axios.patch(`${api}/${url}`, data);
+  return response.data;
+};

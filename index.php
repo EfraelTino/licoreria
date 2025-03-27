@@ -2,8 +2,10 @@
 
 function handleCors() {
     $allowedOrigins = [
+        'http://localhost:4173',
         'http://localhost:5173',
-        'https://beta.tincuy.com'
+        'https://easy.efrael.com',
+        'easy.efrael.com',
     ];
 
     $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
@@ -16,7 +18,7 @@ function handleCors() {
 
     if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
-            header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT");
+            header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH");
         }
 
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {

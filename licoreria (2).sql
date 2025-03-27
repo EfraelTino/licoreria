@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:8889
--- Tiempo de generación: 25-03-2025 a las 02:14:11
+-- Tiempo de generación: 27-03-2025 a las 06:59:29
 -- Versión del servidor: 8.0.35
 -- Versión de PHP: 8.2.20
 
@@ -38,8 +38,7 @@ CREATE TABLE `brands` (
 --
 
 INSERT INTO `brands` (`id_brand`, `name_brand`, `created_at_brand`) VALUES
-(2, 'Marca 2doss', '2025-03-22 22:56:43'),
-(4, 'Marca 2', '2025-03-23 05:10:04');
+(1, 'Sprite', '2025-03-27 06:25:50');
 
 -- --------------------------------------------------------
 
@@ -62,9 +61,7 @@ CREATE TABLE `cash_movements` (
 --
 
 INSERT INTO `cash_movements` (`id`, `user_id`, `sale_id`, `amount`, `type`, `description`, `created_at`) VALUES
-(20, 1, 48, 90.00, 'Ingreso', 'Venta de productos ', '2025-03-24 00:51:41'),
-(21, 1, 49, 20.00, 'Ingreso', 'Venta de productos ', '2025-03-24 00:52:22'),
-(22, 1, 50, 20.00, 'Ingreso', 'Venta de productos ', '2025-03-24 03:17:26');
+(1, 1, 1, 12.30, 'Ingreso', 'Venta de productos ', '2025-03-27 06:31:54');
 
 -- --------------------------------------------------------
 
@@ -78,9 +75,19 @@ CREATE TABLE `cash_registers` (
   `opening_balance` decimal(10,2) NOT NULL,
   `closing_balance` decimal(10,2) DEFAULT NULL,
   `status` enum('Abierta','Cerrada') NOT NULL DEFAULT 'Abierta',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `closed_at` timestamp NULL DEFAULT NULL
+  `created_at` datetime DEFAULT NULL,
+  `closed_at` datetime DEFAULT NULL,
+  `balance_final` decimal(10,0) DEFAULT NULL,
+  `notas` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `egresos` decimal(10,2) DEFAULT '0.00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Volcado de datos para la tabla `cash_registers`
+--
+
+INSERT INTO `cash_registers` (`id`, `user_id`, `opening_balance`, `closing_balance`, `status`, `created_at`, `closed_at`, `balance_final`, `notas`, `egresos`) VALUES
+(1, 1, 40.30, NULL, 'Abierta', '2025-03-27 01:31:39', NULL, NULL, NULL, 0.00);
 
 -- --------------------------------------------------------
 
@@ -100,9 +107,7 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id_category`, `name_cat`, `description_cat`, `created_at`) VALUES
-(1, 'Gaseosas1', 'Gaseoas', '2025-03-20 03:39:59'),
-(2, 'Alcohola', 'Alcohol', '2025-03-20 04:10:19'),
-(3, 'Chocolate', NULL, '2025-03-23 05:18:19');
+(1, 'Gaseosa', NULL, '2025-03-27 06:25:45');
 
 -- --------------------------------------------------------
 
@@ -124,9 +129,7 @@ CREATE TABLE `customers` (
 --
 
 INSERT INTO `customers` (`id`, `name`, `phone`, `document`, `email`, `created_at`) VALUES
-(17, 'Efrael Villanueva', '915068001', '12312312', 'efrael2001@gmail.com', '2025-03-24 00:51:41'),
-(18, 'Efrael Villanueva', '915068001', '123123', 'efrael2001@gmail.com', '2025-03-24 00:52:22'),
-(19, 'Efrael Villanueva', '915068001', '123', 'efrael2001@gmail.com', '2025-03-24 03:17:26');
+(1, 'Efrael Villanueva', '915068001', '70934018', 'efrael2001@gmail.com', '2025-03-27 06:31:54');
 
 -- --------------------------------------------------------
 
@@ -136,7 +139,7 @@ INSERT INTO `customers` (`id`, `name`, `phone`, `document`, `email`, `created_at
 
 CREATE TABLE `payment_method` (
   `id_payment` int NOT NULL,
-  `name_payment` varchar(10) NOT NULL
+  `name_payment` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -144,7 +147,10 @@ CREATE TABLE `payment_method` (
 --
 
 INSERT INTO `payment_method` (`id_payment`, `name_payment`) VALUES
-(1, 'Efectivo');
+(1, 'Efectivo'),
+(2, 'Yape'),
+(3, 'Plin'),
+(4, 'Transferencia');
 
 -- --------------------------------------------------------
 
@@ -171,8 +177,7 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `description`, `category_id`, `price`, `price_offert`, `stock`, `photo`, `created_at`, `updated_at`, `brand_id`) VALUES
-(12, 'Cintas Impresas', 'asd', 1, 10.00, 9.00, 0, '67e0ac8cc4a76.webp', '2025-03-24 00:51:24', '2025-03-24 00:51:41', 2),
-(13, 'Efrael', 'asd', 2, 10.00, 0.00, 6, '67e0acbb225f1.webp', '2025-03-24 00:52:11', '2025-03-24 03:17:26', 2);
+(1, 'Gaseosa Sprite 1 litro', 'Gaseosa', 1, 12.30, 0.00, 9, '67e4f0a739172.webp', '2025-03-27 06:31:03', '2025-03-27 06:31:54', 1);
 
 -- --------------------------------------------------------
 
@@ -193,9 +198,7 @@ CREATE TABLE `sales` (
 --
 
 INSERT INTO `sales` (`id`, `total`, `payment_method`, `created_at`, `userid_sale`) VALUES
-(48, 90.00, 1, '2025-03-24 00:51:41', 1),
-(49, 20.00, 1, '2025-03-24 00:52:22', 1),
-(50, 20.00, 1, '2025-03-24 03:17:26', 1);
+(1, 12.30, 3, '2025-03-27 06:31:54', 1);
 
 -- --------------------------------------------------------
 
@@ -214,9 +217,7 @@ CREATE TABLE `sale_customers` (
 --
 
 INSERT INTO `sale_customers` (`sale_id`, `customer_id`, `created_at`) VALUES
-(48, 17, '2025-03-24 00:51:41'),
-(49, 18, '2025-03-24 00:52:22'),
-(50, 19, '2025-03-24 03:17:26');
+(1, 1, '2025-03-27 06:31:54');
 
 -- --------------------------------------------------------
 
@@ -238,9 +239,7 @@ CREATE TABLE `sale_details` (
 --
 
 INSERT INTO `sale_details` (`id`, `sale_id`, `product_id`, `quantity`, `price`, `created_at`) VALUES
-(81, 48, 12, 10, 9.00, '2025-03-24 00:51:41'),
-(82, 49, 13, 2, 20.00, '2025-03-24 00:52:22'),
-(83, 50, 13, 2, 10.00, '2025-03-24 03:17:26');
+(1, 1, 1, 1, 12.30, '2025-03-27 06:31:54');
 
 -- --------------------------------------------------------
 
@@ -268,15 +267,16 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `role` enum('Administrador','Vendedor') NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `date_login` varchar(40) NOT NULL
+  `date_login` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `status` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `username`, `password`, `role`, `created_at`, `date_login`) VALUES
-(1, 'efrael', 'efrael', '@dev2024', 'Vendedor', '2025-03-23 18:04:52', '');
+INSERT INTO `users` (`id`, `name`, `username`, `password`, `role`, `created_at`, `date_login`, `status`) VALUES
+(1, 'Efrael Villanueva', 'efrael', '$2y$10$Aa0nlUjl5g3Vmp.XxVMbyuyKe7ECS0wZbrvwwd0e.nCEpY/eNB6Q.', 'Administrador', '2025-03-27 06:22:06', NULL, 1);
 
 --
 -- Índices para tablas volcadas
@@ -363,8 +363,7 @@ ALTER TABLE `suppliers`
 -- Indices de la tabla `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -374,55 +373,55 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT de la tabla `brands`
 --
 ALTER TABLE `brands`
-  MODIFY `id_brand` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_brand` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `cash_movements`
 --
 ALTER TABLE `cash_movements`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `cash_registers`
 --
 ALTER TABLE `cash_registers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id_category` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_category` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `payment_method`
 --
 ALTER TABLE `payment_method`
-  MODIFY `id_payment` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_payment` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `sale_details`
 --
 ALTER TABLE `sale_details`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `suppliers`

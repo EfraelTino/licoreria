@@ -1,3 +1,4 @@
+{/**Using */}
 import { useEffect, useState } from "react"
 import { HedaerGeneral } from "@/components/header-general"
 import { getDatas } from "@/api/api"
@@ -7,6 +8,7 @@ import { Brand, Categories } from "@/lib/types"
 import { CategoriesPage } from "@/components/product/categories"
 import { BrandsPage } from "@/components/product/brands"
 import { ProductTable } from "@/components/product/product-table"
+
 // Product type definition
 type Product = {
     id?: number
@@ -33,11 +35,11 @@ export default function ProductsPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<{
         errorProducts: string;
-        errorCategories: string;
+        errorCategorie: string;
         errorBrands: string;
     }>({
         errorProducts: "",
-        errorCategories: "",
+        errorCategorie: "",
         errorBrands: "",
     });
     const fetchProducts = async () => {
@@ -69,18 +71,20 @@ export default function ProductsPage() {
     const fetchCategories = async () => {
         try {
             const response = await getDatas("/categorias");
-
+            console.log(response);
             if (response.success) {
                 setError(prev => ({
                     ...prev,
                     errorCategorie: "",
                 }));
                 return setCategories(response.message);
+            }else{
+                setError(prev => ({
+                    ...prev,
+                    errorCategorie: response.message.toString(),
+                }));
             }
-            setError(prev => ({
-                ...prev,
-                errorCategorie: response.message,
-            }));
+           
         } catch (error) {
             console.log(error);
             setError(prev => ({
@@ -143,7 +147,7 @@ export default function ProductsPage() {
     return (
         <>
             <HedaerGeneral />
-            <Tabs defaultValue="productos" className="container mx-auto p-4 md:p-10">
+            <Tabs defaultValue="productos" className="container mx-auto p-4 md:p-10 space-y-2">
                 <div className="flex justify-center w-full">
                     <TabsList className="flex justify-center">
                         <TabsTrigger value="productos">Productos</TabsTrigger>
@@ -152,20 +156,12 @@ export default function ProductsPage() {
                     </TabsList>
                 </div>
                 <TabsContent value="categorias" >
-                    {
-                        error.errorCategories && <div className="flex justify-center items-center h-screen"> {error.errorCategories} </div>
-                    }
-                    {
-                        !error.errorCategories && <CategoriesPage categories={categories} loading={loading} fetchCategories={fetchCategories} />
-                    }
+                    <CategoriesPage errorCategories={error.errorCategorie} categories={categories} loading={loading} fetchCategories={fetchCategories} />
                 </TabsContent>
                 <TabsContent value="marcas">
-                    {
-                        error.errorBrands && <div className="flex justify-center items-center h-screen"> {error.errorBrands} </div>
-                    }
-                    {
-                        !error.errorBrands && <BrandsPage brand={brands} loading={loading} fetchBrands={fetchBrands} />
-                    }
+     
+                     <BrandsPage brand={brands} errorBrands = {error.errorBrands} loading={loading} fetchBrands={fetchBrands} />
+             
                 </TabsContent>
                 <TabsContent value="productos" className="">
                     <ProductTable error={error.errorProducts} loading={loading} fetchProducts={fetchProducts} initialFormData={initialFormData} setInitialFormData={setInitialFormData} productos={productos} categories={categories} brands={brands} setLoading={setLoading} fetchCategories={fetchCategories} fetchBrands={fetchBrands} />

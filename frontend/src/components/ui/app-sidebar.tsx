@@ -1,5 +1,4 @@
-import React from "react"
-import { Calendar, Check, ChevronsUpDown, ChevronUp, Home, Inbox, LogOut, Search, User, User2 } from "lucide-react"
+import {  ChevronsUpDown, ChevronUp,  LayoutDashboard, LogOut, Package, ShoppingCart, User, User2, Users, Wallet } from "lucide-react"
 import {
     Sidebar,
     SidebarContent,
@@ -14,39 +13,67 @@ import {
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SidebarMenuLink } from "../sidenar-link"
-// Menu items.
-const items = [
+import { UserData } from "@/lib/types"
+import { useAuth } from "@/store/auth"
+
+// Menu items por rol
+const adminItems = [
     {
         title: "Principal",
         url: "/dashboard",
-        icon: Home,
+        icon: LayoutDashboard,
     },
     {
         title: "Productos",
         url: "/dashboard/productos",
-        icon: Inbox,
+        icon: Package,
     },
     {
         title: "Ventas",
         url: "/dashboard/ventas",
-        icon: Calendar,
+        icon: ShoppingCart,
     },
     {
         title: "Caja",
         url: "/dashboard/caja",
-        icon: Search,
+        icon: Wallet,
     },
     {
         title: "Usuarios",
         url: "/dashboard/usuarios",
-        icon: User,
+        icon: Users,
     }
 ]
 
-export function AppSidebar() {
-    const [selectedVersion, setSelectedVersion] = React.useState('')
+const vendedorItems = [
+    {
+        title: "Principal",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+    },
+    {
+        title: "Productos",
+        url: "/dashboard/productos",
+        icon: Package,
+    },
+    {
+        title: "Ventas",
+        url: "/dashboard/ventas",
+        icon: ShoppingCart,
+    },
+    {
+        title: "Caja",
+        url: "/dashboard/caja",
+        icon: Wallet,
+    },
+]
 
-    const versions = ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"]
+export function AppSidebar({user}: {user: UserData}) {
+    const logout = useAuth((state) => state.logout)
+    
+    // Seleccionar items según el rol
+    const items = user.role === 'Administrador' ? adminItems : vendedorItems
+
     return (
         <Sidebar>
             <SidebarContent>
@@ -55,11 +82,11 @@ export function AppSidebar() {
                     <SidebarGroupLabel className="mt-8">
                         <div className="flex items-center gap-2 mb-8">
                             <img
-                                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-01-12%20at%2012.32.42%20PM-QicgA83ZI0TfZlOynDOqlhOGnbwzEv.jpeg"
+                                src="/logo.png"
                                 alt="Chili POS Logo"
-                                className="w-8 h-8"
+                                className="w-16 h-16"
                             />
-                            <span className="font-semibold">CHILI POS</span>
+                            <span className="font-semibold">Easy Chill</span>
                         </div>
                     </SidebarGroupLabel>
                     <SidebarHeader>
@@ -75,19 +102,19 @@ export function AppSidebar() {
                                                 <User className="size-4" />
                                             </div>
                                             <div className="flex flex-col gap-0.5 leading-none">
-                                                <span className="truncate text-sm font-medium leading-5 text-neutral-900">Efrael</span>
-                                                <span className="truncate text-xs capitalize leading-tight text-neutral-500">Financiera</span>
+                                                <span className="truncate text-sm font-medium leading-5 text-neutral-900">{user.name}</span>
+                                                <span className="truncate text-xs capitalize leading-tight text-neutral-500">{user.role }</span>
                                             </div>
                                             <ChevronsUpDown className="ml-auto" />
                                         </SidebarMenuButton>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]" align="start">
+                                    {/**<DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]" align="start">
                                         {versions.map((version) => (
                                             <DropdownMenuItem key={version} onSelect={() => setSelectedVersion(version)}>
                                                 v{version} {version === selectedVersion && <Check className="ml-auto" />}
                                             </DropdownMenuItem>
                                         ))}
-                                    </DropdownMenuContent>
+                                    </DropdownMenuContent> */}
                                 </DropdownMenu>
                             </SidebarMenuItem>
                         </SidebarMenu>
@@ -113,17 +140,19 @@ export function AppSidebar() {
                         <DropdownMenu>
                             <DropdownMenuTrigger className="w-full justify-between border bg-white" asChild>
                                 <SidebarMenuButton className="w-full justify-between border">
-                                    <User2 /> Efrael
+                                    <User2 /> {user.name}
                                     <ChevronUp className="ml-auto" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
                                 <DropdownMenuItem>
-                                    <div><p className="truncate text-sm font-medium text-neutral-900">
-                                        Efrael
-                                    </p><p className="truncate text-sm text-neutral-500">email</p></div>
+                                        <div><p className="truncate text-sm font-medium text-neutral-900">
+                                        <strong>Nombres: </strong>  {user.name}
+                                        </p><p className="truncate text-sm text-neutral-500">
+                                            <strong>Usuarios: </strong> {user.username}
+                                        </p></div>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={logout}>
                                     <LogOut /> <span>Salir</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>

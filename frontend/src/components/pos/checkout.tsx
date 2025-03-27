@@ -1,6 +1,7 @@
+{/**Using */}
 import { useState } from "react"
 import { Check, DollarSign } from "lucide-react"
-
+import { Products } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -15,12 +16,13 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { postDatas } from "@/api/api"
 import { toast } from "sonner"
+import { useAuth } from "@/store/auth"
 
 interface CheckoutProps {
   total: number
   onComplete: () => void
   onCancel: () => void
-  cart: Array<{ product: (typeof productos)[0]; quantity: number }>
+  cart: Array<{ product: Products; quantity: number }>
   paymentMethodSelected: { id_payment: number, name_payment: string } | null
   fetchProducts: () => void
 }
@@ -29,12 +31,15 @@ export function Checkout({ total, onComplete, onCancel, cart, paymentMethodSelec
   const [paymentMethod, setPaymentMethod] = useState("cash")
   const [processing, setProcessing] = useState(false)
   const [completed, setCompleted] = useState(false)
+
+  const user = useAuth((state) => state.user)
   const [userDate, setUserData] = useState({
     names: "",
     dni: "",
     phone: "",
     email: "",
   })
+
   const handlePayment = async () => {
     setProcessing(true)
     try {
@@ -45,35 +50,31 @@ export function Checkout({ total, onComplete, onCancel, cart, paymentMethodSelec
         setProcessing(false)
         return
       }
-      console.log("total", total)
-      console.log("paymentMethodSelected", paymentMethodSelected)
-      console.log("cart", cart)
-      console.log("userDate", userDate)
       //tomaar en cuelta el id del cliente
       const response = await postDatas("/registrar-venta", {
         total: total,
         paymentMethodSelected: paymentMethodSelected?.id_payment,
         cart: cart,
         userdata: userDate,
-        userid: 1
+        userid: user?.id  
       })
       const {success, message} = response;
       if (!success) {
         toast.error(
-          typeof message === "string" ? message : JSON.stringify(message)
+          typeof message === "string" ? message : JSON.stringify(message), {position: "top-center"}
         );
         return;
       }
       
       toast.success(
-        typeof message === "string" ? message : "Venta registrada correctamente"
+        typeof message === "string" ? message : "Venta registrada correctamente", {position: "top-center"}
       );
       fetchProducts(); 
       setCompleted(true);
       onComplete();
 
     } catch {
-      toast.error("Error al registrar la venta")
+      toast.error("Error al registrar la venta", {position: "top-center"} )
     }
   }
 
@@ -87,8 +88,8 @@ export function Checkout({ total, onComplete, onCancel, cart, paymentMethodSelec
       <Dialog open={true} onOpenChange={(open) => !open && onCancel()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Complete Payment</DialogTitle>
-            <DialogDescription>Total amount due: ${total.toFixed(2)}</DialogDescription>
+            <DialogTitle>Completar Pago  </DialogTitle>
+            <DialogDescription>Total a pagar: S/.{total.toFixed(2)}</DialogDescription>
           </DialogHeader>
 
           {completed ? (
@@ -154,7 +155,7 @@ export function Checkout({ total, onComplete, onCancel, cart, paymentMethodSelec
           )}
 
           {!completed && (
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button variant="outline" onClick={onCancel} disabled={processing}>
                 Cancelar
               </Button>

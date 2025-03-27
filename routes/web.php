@@ -31,9 +31,19 @@ $router->patch('/update-data', function () use ($userController) {
     $data = json_decode(file_get_contents('php://input'), true);
     echo $userController->updateDatas(['body' => $data]);
 });
+//desactivar usuario
+$router->post('/desactivar-usuario', function () use ($userController) {
+    $data = json_decode(file_get_contents('php://input'), true);
+    echo $userController->desactivarUsuario(['body' => $data]);
+});
 
 $router->get('/usuarios', function () use ($userController) {
     echo $userController->allUsers();
+});
+//datos de un usuario
+$router->post('/userdata', function () use ($userController) {
+    $data = json_decode(file_get_contents('php://input'), true);
+    echo $userController->detalleUsuario(['body' => $data]);
 });
 
 //OBTENER PRODUCTOS
@@ -152,19 +162,26 @@ $router->post('/verificar-caja', function () use ($salesController) {
     $data = json_decode(file_get_contents('php://input'), true);
     echo $salesController->verificarCaja(['body' => $data]);
 });
+//listar cajas
+$router->get('/listar-cajas', function () use ($salesController) {
+    echo $salesController->listarCajas();
+});
 $router->post('/cerrar-caja', function () use ($salesController) {
     $data = json_decode(file_get_contents('php://input'), true);
     echo $salesController->cerrarCaja(['body' => $data]);
 });
-
+//registrar egreso
+$router->post('/registrar-egreso', function () use ($salesController) {
+    $data = json_decode(file_get_contents('php://input'), true);
+    echo $salesController->registrarEgreso(['body' => $data]);
+});
 $router->post('/registrar-movimiento', function () use ($salesController) {
     $data = json_decode(file_get_contents('php://input'), true);
     echo $salesController->registrarMovimientoCaja(['body' => $data]);
 });
 
-$router->post('/movimientos-caja', function () use ($salesController) {
-    $data = json_decode(file_get_contents('php://input'), true);
-    echo $salesController->obtenerMovimientosCaja(['body' => $data]);
+$router->get('/movimientos-caja', function () use ($salesController) {
+    echo $salesController->obtenerMovimientosCaja();
 });
 
 $router->post('/estado-caja', function () use ($salesController) {

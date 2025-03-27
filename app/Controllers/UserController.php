@@ -18,7 +18,7 @@ class UserController
     private function validarCampos($data)
     {
         // Verifica si la clave 'body' existe en $data y contiene los campos necesarios
-        return isset($data['name'], $data['lastname'], $data['email'], $data['password'], $data['password_repeat'], $data['userType']);
+        return isset($data['name'], $data['username'], $data['role'], $data['status'], $data['password'], $data['password_repeat']);
     }
 
     public function loginUser($request)
@@ -26,10 +26,6 @@ class UserController
         $data = $request['body'];
 
         // Validar email
-        if (!$this->validarEmail($data['email'])) {
-            return $this->jsonResponse(200, ['success' => false, 'error' => 'El email no es válido, intente de nuevo.']);
-        }
-
         // Validar contraseña
         if (empty($data['password'])) {
             return $this->jsonResponse(200, ['success' => false, 'error' => 'Ingrese una contraseña para continuar']);
@@ -45,23 +41,21 @@ class UserController
         }
 
         // Verificar contraseña
-        /**
-         *  if (!password_verify($data['password'], $user['password'])) {
+   
+          if (!password_verify($data['password'], $user['password'])) {
             return $this->jsonResponse(200, ['success' => false, 'error' => 'Contraseña incorrecta, intente de nuevo']);
         }
-         */
+         
         // Generar token
-        $this->userModel->updateLogin($data['email']);
         $token = $this->generateToken($user);
 
         return $this->jsonResponse(200, ['success' => true, 'userdata' => [
             'token' => $token,
-            'email' => $user['email'],
+            'username' => $user['username'],
             'name' => $user['name'],
-            'lastname' => $user['lastname'],
-            'typeuser' => $user['typeuser'],
+            'role' => $user['role'],
             'status' => $user['status'],
-            'iduser' => $user['id']
+            'id' => $user['id']
         ]]);
     }
 
@@ -76,29 +70,19 @@ class UserController
         if (!$this->validarCampos($data)) {
             return $this->jsonResponse(200, ['success' => false, 'error' => 'Por favor, complete todos los campos.']);
         }
-
-        // Validar email
-        if (!$this->validarEmail($data['email'])) {
-            return $this->jsonResponse(200, ['success' => false, 'error' => 'El email no es válido, intente de nuevo.']);
-        }
-
         // Comparar contraseñas
         if ($data['password'] !== $data['password_repeat']) {
             return $this->jsonResponse(200, ['success' => false, 'error' => 'Las contraseñas no coinciden, intente de nuevo.']);
         }
-
         // Hash de contraseñas
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $data['repeat_password'] = $data['password'];
-
         // Verificar si el usuario existe
-        if ($this->userModel->checkUserExists($data['email'])) {
+        if ($this->userModel->checkUserExists($data['username'])) {
             return $this->jsonResponse(200, ['success' => false, 'error' => 'Usuario registrado, inicia sesión']);
         }
-
         // Crear usuario
         if ($this->userModel->createUser($data)) {
-            $this->utils->sendEmail($data['email']);
             return $this->jsonResponse(200, ['success' => true, 'message' => 'Usuario creado correctamenteo']);
         } else {
             return $this->jsonResponse(200, ['success' => false, 'error' => 'Error al crear el usuario']);
@@ -106,7 +90,7 @@ class UserController
     }
 
 
-    public function updateDatas($request)
+    public function     updateDatas($request)
     {
         $data = $request['body'];
         $updateFields = []; // Solo guardará los datos que se deben actualizar
@@ -114,59 +98,74 @@ class UserController
         // Si el usuario quiere cambiar la contraseña, verificamos y la encriptamos
         if (!empty($data['password']) && !empty($data['password_repeat'])) {
             if ($data['password'] !== $data['password_repeat']) {
-                return $this->utils->jsonResponse(200, ['success' => false, 'error' => 'Las contraseñas no coinciden']);
+                return $this->utils->jsonResponse(200, ['success' => false, 'message' => 'Las contraseñas no coinciden']);
             }
             $updateFields['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         }
     
         // Agregar otros campos solo si existen en la solicitud
-        if (array_key_exists('email', $data)) {
-            $updateFields['email'] = $data['email'];
-        }
         if (array_key_exists('name', $data)) {
             $updateFields['name'] = $data['name'];
         }
-        if (array_key_exists('lastname', $data)) {
-            $updateFields['lastname'] = $data['lastname'];
+        if (array_key_exists('username', $data)) {
+            $updateFields['username'] = $data['username'];
         }
-        if (array_key_exists('typeuser', $data)) {
-            $updateFields['typeuser'] = $data['typeuser'];
+        if (array_key_exists('role', $data)) {
+            $updateFields['role'] = $data['role'];
         }
         if (array_key_exists('status', $data)) {
             $updateFields['status'] = $data['status'];
         }
         // Asegurar que el ID del usuario está presente
         if (!array_key_exists('iduser', $data)) {
-            return $this->utils->jsonResponse(200, ['success' => false, 'error' => 'ID de usuario no proporcionado']);
+            return $this->utils->jsonResponse(200, ['success' => false, 'message' => 'ID de usuario no proporcionado']);
         }
-        $updateFields['iduser'] = $data['iduser'];
+        $updateFields['id'] = $data['iduser'];
     
         // Si no hay campos para actualizar, devolvemos un error
         if (empty($updateFields)) {
-            return $this->utils->jsonResponse(200, ['success' => false, 'error' => 'No se enviaron datos para actualizar.']);
+            return $this->utils->jsonResponse(200, ['success' => false, 'message' => 'No se enviaron datos para actualizar.']);
         }
     
         // Llamamos al modelo solo con los campos que realmente se actualizarán
         $updateData = $this->userModel->updateDataUser($updateFields);
     
         if (!$updateData) {
-            return $this->utils->jsonResponse(200, ['success' => false, 'error' => 'Error al actualizar los datos: ' . json_encode($updateFields)]);
+            return $this->utils->jsonResponse(200, ['success' => false, 'message' => 'Error al actualizar los datos.' . var_dump($updateFields)]);
         }
     
         return $this->utils->jsonResponse(200, ['success' => true, 'message' => 'Datos actualizados']);
     }
-    
+    //desactivar usuario    
+    public function desactivarUsuario($request)
+    {
+        $data = $request['body'];
+        $updateData = $this->userModel->desactivarUsuario($data);
+        if (!$updateData) {
+            return $this->utils->jsonResponse(200, ['success' => false, 'message' => 'Error al actualizar los datos.' . var_dump($data)]);
+        }
+        return $this->utils->jsonResponse(200, ['success' => true, 'message' => 'Usuario desactivado']);
+    }
     public function allUsers()
     {
         try {
             $users = $this->userModel->allUsers();
             if (empty($users)) {
-                return $this->utils->jsonResponse(200, ['success' => false,'error' => 'No se encontraron usuarios']);
+                return $this->utils->jsonResponse(200, ['success' => false,'message' => 'No se encontraron usuarios']);
             }
             return $this->utils->jsonResponse(200, ['success' => true, 'message' =>$users] );
         } catch (\Throwable $th) {
             return $this->utils->jsonResponse(200, ['success' => true, 'error' => $th->getMessage()]);
         }
+    }
+    public function detalleUsuario($request)
+    {
+        $data = $request['body'];
+        $user = $this->userModel->findUserById($data['id']);
+        if (empty($user)) {
+            return $this->utils->jsonResponse(200, ['success' => false, 'error' => 'Usuario no encontrado']);
+        }
+        return $this->utils->jsonResponse(200, ['success' => true, 'message' => $user]);
     }
     public function allOccupations()
     {
@@ -205,10 +204,7 @@ class UserController
 
             $this->utils->jsonResponse(200, ["message" => "Ususario no encontrado, introduce una contraseña válida ", "success" => false]);
         }
-        $enviarEmail = $this->utils->recoverEmail($data['email']);
-        if (!$enviarEmail) {
-            $this->utils->jsonResponse(200, ["message" => "Ocurrión un error, intenta de nuevo", "success" => false]);
-        }
+   
         $this->utils->jsonResponse(200, ["message" => "Hemos enviado un mensaje a tu bandeja de entrada. Revisa tu correo, sigue los pasos para cambiar tu contraseña y accede para explorar todos nuestros productos.", "success" => true]);
     }
     public function searchEmail($request)
@@ -233,10 +229,7 @@ class UserController
 
             $this->utils->jsonResponse(200, ["message" => "Correo incorrecto, intente de nuevo ", "success" => false]);
         }
-        $enviarEmail = $this->utils->recoverEmail($data['email']);
-        if (!$enviarEmail) {
-            $this->utils->jsonResponse(200, ["message" => "Ocurrión un error, intenta de nuevo", "success" => false]);
-        }
+
         $this->utils->jsonResponse(200, ["message" => "Hemos enviado un mensaje a tu bandeja de entrada. Revisa tu correo, sigue los pasos para cambiar tu contraseña y accede para explorar todos nuestros productos.", "success" => true]);
     }
     public function activarCuenta($request)

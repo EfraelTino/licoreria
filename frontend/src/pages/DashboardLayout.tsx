@@ -13,7 +13,7 @@ export const DashboardLayout = () => {
 
     return (
         <SidebarProvider className='bg-[#f9f9f9]'>
-            <AppSidebar />
+            <AppSidebar user={user} />
             <SidebarInset>
                <HedaerGeneral />
                 <main className='bg-[#f9f9f9] w-full p-4'>

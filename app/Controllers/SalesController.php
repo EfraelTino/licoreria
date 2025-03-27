@@ -19,49 +19,48 @@ class   SalesController
     // Registrar venta
     public function procesarVenta($request)
     {
-     
-            $data = $request['body'];
 
-            // Validar datos mínimos requeridos
-            //primero buscamos al usuario
-            if (!ctype_digit($data['userdata']['dni']) || strlen($data['userdata']['dni']) >= 11) {
-                return $this->utils->jsonResponse(200, [
-                    'message' => 'El DNI debe ser numérico y tener menos de 11 dígitos',
-                    'success' => false
-                ]);
-            }
-            $findCustomerByDocument = $this->userModel->findUserByDocument($data['userdata']['dni']);
-            if (!$findCustomerByDocument) {
-                $createCustomer = $this->userModel->createCustomer($data['userdata']);
-                if ($createCustomer) {
-                    $data['client_id'] = $createCustomer;
-                    $findCustomerByDocument = $createCustomer;
-                    $newSale = $this->registrarSale($data);
-                    if (!$newSale['success']) {
-                        return $this->utils->jsonResponse(200, [
-                            'message' => $newSale['message'],
-                            'success' => false
-                        ]);
-                    }
+        $data = $request['body'];
+
+        // Validar datos mínimos requeridos
+        //primero buscamos al usuario
+        if (!ctype_digit($data['userdata']['dni']) || strlen($data['userdata']['dni']) >= 11) {
+            return $this->utils->jsonResponse(200, [
+                'message' => 'El DNI debe ser numérico y tener menos de 11 dígitos',
+                'success' => false
+            ]);
+        }
+        $findCustomerByDocument = $this->userModel->findUserByDocument($data['userdata']['dni']);
+        if (!$findCustomerByDocument) {
+            $createCustomer = $this->userModel->createCustomer($data['userdata']);
+            if ($createCustomer) {
+                $data['client_id'] = $createCustomer;
+                $findCustomerByDocument = $createCustomer;
+                $newSale = $this->registrarSale($data);
+                if (!$newSale['success']) {
                     return $this->utils->jsonResponse(200, [
                         'message' => $newSale['message'],
-                        'success' => true
+                        'success' => false
                     ]);
                 }
-            }
-            $data['client_id'] = $findCustomerByDocument;
-            $venta = $this->registrarSale($data);
-            if (!$venta['success']) {
                 return $this->utils->jsonResponse(200, [
-                    'message' => $venta['message'],
-                    'success' =>  false
+                    'message' => $newSale['message'],
+                    'success' => true
                 ]);
             }
+        }
+        $data['client_id'] = $findCustomerByDocument;
+        $venta = $this->registrarSale($data);
+        if (!$venta['success']) {
             return $this->utils->jsonResponse(200, [
-                'message' => $venta,
-                'success' => true
+                'message' => $venta['message'],
+                'success' =>  false
             ]);
-
+        }
+        return $this->utils->jsonResponse(200, [
+            'message' => $venta,
+            'success' => true
+        ]);
     }
     //registrar venta
     public function registrarSale($data)
@@ -76,7 +75,7 @@ class   SalesController
                     'success' => false
                 ];
             }
-          
+
             // Verificar que hay productos
             if (count($data['cart']) === 0) {
                 return [
@@ -112,12 +111,12 @@ class   SalesController
                     'success' => false
                 ];
             }
- 
+
             //REGISTRAR MOVIMIENTO DE CAJA
             $sendData['monto'] = $data['total'];
             $sendData['tipo'] = 'Ingreso';
             $sendData['usuario_id'] = $data['userid'];
-            $sendData['descripcion'] = 'Venta de productos ' ;
+            $sendData['descripcion'] = 'Venta de productos ';
             $sendData['venta_id'] = $newSale;
             $registerCashMovement = $this->registrarMovimientoCaja($sendData);
             if (!$registerCashMovement['success']) {
@@ -137,48 +136,68 @@ class   SalesController
             ];
         }
     }
+    public function registrarEgreso($request)
+    {
+        $data = $request['body'];
+        $sendData['monto'] = $data['monto'];
+        $sendData['tipo'] = $data['tipo'];
+        $sendData['usuario_id'] = $data['usuario_id'];
+        $sendData['descripcion'] = $data['descripcion'];
+        $sendData['venta_id'] = null;
+        $registerDischarge = $this->registrarMovimientoCaja($sendData);
+        if (!$registerDischarge['success']) {
+            return $this->utils->jsonResponse(200, [
+                'message' => $registerDischarge['message'],
+                'success' => $registerDischarge['success']
+            ]);
+        }
+        return $this->utils->jsonResponse(200, [
+            'message' => $registerDischarge['message'],
+            'success' => $registerDischarge['success']
+        ]);
+    }
     // Obtener detalle de venta
     public function obtenerDetalleVenta($request)
     {
         $data = $request['body'];
         $ventaId = $data['id'];
 
-            if (!is_numeric($ventaId)) {
-                return $this->utils->jsonResponse(200, [
-                    'message' => 'ID de venta inválido',
-                    'success' => false
-                ]);
-            }
-
-            $detalle = $this->salesModel->obtenerDetalleVenta($ventaId);
-
-            if (!$detalle) {
-                return $this->utils->jsonResponse(200, [
-                    'message' => 'Venta no encontrada',
-                    'success' => false
-                ]);
-            }
-
+        if (!is_numeric($ventaId)) {
             return $this->utils->jsonResponse(200, [
-                'data' => $detalle,
-                'success' => true
+                'message' => 'ID de venta inválido',
+                'success' => false
             ]);
- 
+        }
+
+        $detalle = $this->salesModel->obtenerDetalleVenta($ventaId);
+
+        if (!$detalle) {
+            return $this->utils->jsonResponse(200, [
+                'message' => 'Venta no encontrada',
+                'success' => false
+            ]);
+        }
+
+        return $this->utils->jsonResponse(200, [
+            'data' => $detalle,
+            'success' => true
+        ]);
     }
     //amount day
-    public function amountDay($request){
+    public function amountDay($request)
+    {
         $data = $request['body'];
         try {
-            $date_get= $data['fechaObtener'];
+            $date_get = $data['fechaObtener'];
             $getAmounts = $this->salesModel->getAmounts($date_get);
-            if($getAmounts){
+            if ($getAmounts) {
                 return $this->utils->jsonResponse(200, [
                     'message' => $getAmounts,
                     'success' => true
                 ]);
             }
             return $this->utils->jsonResponse(200, [
-                'message' => 'No hay amounts para la fecha: '. $date_get,
+                'message' => 'No hay amounts para la fecha: ' . $date_get,
                 'success' => false
             ]);
         } catch (\Throwable $th) {
@@ -189,23 +208,23 @@ class   SalesController
         }
     }
 
-    
+
     public function listarVentas($request = null)
     {
         try {
             $limite = 20;
             $pagina = 1;
             $fecha = date('Y-m-d'); // Fecha por defecto
-    
+
             if ($request && isset($request['body'])) {
                 $data = $request['body'];
                 $fecha = $data['fecha'] ?? $fecha;
                 $limite = $data['limite'] ?? 20;
                 $pagina = $data['pagina'] ?? 1;
             }
-    
+
             $ventas = $this->salesModel->listarVentas($limite, $pagina, $fecha);
-    
+
             return $this->utils->jsonResponse(200, [
                 'data' => $ventas,
                 'paginacion' => [
@@ -221,7 +240,7 @@ class   SalesController
             ]);
         }
     }
-    
+
 
     // Registrar movimiento de caja
     public function registrarMovimientoCaja($data)
@@ -274,10 +293,10 @@ class   SalesController
             }
 
             // Verificar si ya hay una caja abierta
-            $cajaActual = $this->salesModel->obtenerEstadoCaja($data['usuario_id']);
+            $cajaActual = $this->salesModel->obtenerEstadoCaja();
             if ($cajaActual) {
                 return $this->utils->jsonResponse(200, [
-                    'message' => 'Ya existe una caja abierta para este usuario',
+                    'message' => 'Ya existe una caja abierta',
                     'caja' => $cajaActual,
                     'success' => false
                 ]);
@@ -298,17 +317,34 @@ class   SalesController
         }
     }
     //verificar si la caja esta abierta
-    public function verificarCaja($request){
+    public function verificarCaja($request)
+    {
         $data = $request['body'];
-        $cajaActual = $this->salesModel->obtenerEstadoCaja($data['usuario_id']);
-        if($cajaActual){
+        $cajaActual = $this->salesModel->obtenerEstadoCaja();
+        if ($cajaActual) {
             return $this->utils->jsonResponse(200, [
                 'message' => 'La caja esta abierta',
                 'success' => true
             ]);
         }
         return $this->utils->jsonResponse(200, [
-            'message' => 'La caja no esta abierta',
+            'message' => 'No hay ninguna caja abierta',
+            'success' => false
+        ]);
+    }
+    //listar cajas
+    public function listarCajas()
+    {
+
+        $cajas = $this->salesModel->listarCajas();
+        if ($cajas) {
+            return $this->utils->jsonResponse(200, [
+                'message' => $cajas,
+                'success' => true
+            ]);
+        }
+        return $this->utils->jsonResponse(200, [
+            'message' => 'No hay ninguna caja abierta',
             'success' => false
         ]);
     }
@@ -319,13 +355,14 @@ class   SalesController
             $data = $request['body'];
 
             // Validar datos mínimos
+        
             if (empty($data['caja_id']) || !isset($data['monto_final'])) {
                 return $this->utils->jsonResponse(200, [
                     'message' => 'Faltan datos obligatorios para cerrar caja',
                     'success' => false
                 ]);
             }
-
+            
             $result = $this->salesModel->cerrarCaja($data);
 
             if (!$result) {
@@ -348,16 +385,17 @@ class   SalesController
     }
 
     // Obtener movimientos de caja
-    public function obtenerMovimientosCaja($request)
+    public function obtenerMovimientosCaja()
     {
         try {
-            $data = $request['body'] ?? [];
+            /*$data = $request['body'] ?? [];
 
             $cajaId = $data['caja_id'] ?? null;
             $fecha = $data['fecha'] ?? null;
 
             $movimientos = $this->salesModel->obtenerMovimientosCaja($cajaId, $fecha);
-
+*/
+            $movimientos = $this->salesModel->obtenerMovimientosCaja();
             return $this->utils->jsonResponse(200, [
                 'data' => $movimientos,
                 'success' => true

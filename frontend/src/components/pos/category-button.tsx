@@ -18,6 +18,7 @@ export function CategoryButton({ children, active, icon, onClick }: CategoryButt
       variant={active ? "default" : "outline"}
       className={cn("flex items-center gap-2 whitespace-nowrap", active ? "bg-primary text-primary-foreground" : "")}
       onClick={onClick}
+      size="sm"
     >
       {icon}
       {children}
