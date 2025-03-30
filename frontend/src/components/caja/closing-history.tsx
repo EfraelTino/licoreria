@@ -52,7 +52,6 @@ export function ClosingHistory() {
   useEffect(() => {
     fetchVentas(pagina);
   }, [pagina, date]);
-  console.log(totalPaginas)
   const formatearMonto = (monto: number) => {
     return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(monto);
   }
