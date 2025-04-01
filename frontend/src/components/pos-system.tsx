@@ -232,7 +232,7 @@ export default function PosSystem() {
                         <div className="relative mb-4">
                             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Search products..."
+                                placeholder=" Buscar productos..."
                                 className="pl-9"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
