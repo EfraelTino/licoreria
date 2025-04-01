@@ -73,6 +73,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
     }
 
     // Handle form input changes
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
 
@@ -104,7 +105,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
         const rawValue = e.target.value.replace(/[^0-9.]/g, ""); // Solo números y punto
         setInitialFormData({ ...initialFormData, [field]: rawValue }); // Guardar como string temporal
     };
-    
+
     const handlePriceBlur = (field: "price" | "price_offert") => {
         const formattedPrice = PEN(initialFormData[field]?.toString() ?? "").format();
         setInitialFormData({
@@ -112,7 +113,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             [field]: Number(formattedPrice.replace(/[^0-9.]/g, ""))
         });
     };
-    
+
     // Handle form submission
     const handleSubmit = async () => {
         if (currentProduct) {
@@ -128,13 +129,14 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     !initialFormData.idProduct
                 ) {
                     console.log(initialFormData)
-                    toast.error("Todos los campos son requeridossss", {position: "top-center"});
+                    toast.error("Todos los campos son requeridossss", { position: "top-center" });
                     return;
                 }
                 console.log(initialFormData)
                 if (chandePhoto) {
+                    setLoading(true)
                     if (!initialFormData.image) {
-                        toast.error("La imagen es requerida", {position: "top-center"}  )
+                        toast.error("La imagen es requerida", { position: "top-center" })
 
                         return;
                     }
@@ -153,30 +155,30 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                         const updateProduct = await putData('actualizar-producto', initialFormData);
                         console.log(updateProduct)
                         if (updateProduct.success) {
-                            toast.success(updateProduct.message, {position: "top-center"})
+                            toast.success(updateProduct.message, { position: "top-center" })
                             fetchProducts()
                             setIsFormOpen(false)
                         } else {
-                            toast.error(updateProduct.message, {position: "top-center"})
+                            toast.error(updateProduct.message, { position: "top-center" })
                         }
 
                     } else {
-                        toast.error('Error al subir la imagen', {position: "top-center"})
+                        toast.error('Error al subir la imagen', { position: "top-center" })
                     }
                 } else {
                     console.log(initialFormData)
                     const responseProduct = await putData('actualizar-producto', initialFormData)
                     if (responseProduct.success) {
-                        toast.success(responseProduct.message, {position: "top-center"})
+                        toast.success(responseProduct.message, { position: "top-center" })
                         fetchProducts()
                         setIsFormOpen(false)
                     } else {
-                        toast.error(responseProduct.message, {position: "top-center"})
+                        toast.error(responseProduct.message, { position: "top-center" })
                     }
                 }
             } catch (error) {
                 console.log(error)
-                toast.error('Error al actualizar el producto', {position: "top-center"})
+                toast.error('Error al actualizar el producto', { position: "top-center" })
             } finally {
                 setLoading(false);
                 fetchCategories();
@@ -193,11 +195,11 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     !initialFormData.description ||
                     !initialFormData.image
                 ) {
-                    toast.error("Todos los campos son requeridos", {position: "top-center"});
+                    toast.error("Todos los campos son requeridos", { position: "top-center" });
                     return;
                 }
                 if (initialFormData.price_offert && (initialFormData.price_offert ?? 0) > (initialFormData.price ?? 0)) {
-                    toast.error("El precio de oferta no puede ser mayor al precio", {position: "top-center"});
+                    toast.error("El precio de oferta no puede ser mayor al precio", { position: "top-center" });
                     return;
                 }
 
@@ -205,29 +207,33 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                 photoData.append('photo', initialFormData.image)
                 console.log(initialFormData.image)
                 console.log(photoData)
+
                 const responseImage = await postDataWithImage('subir-image', photoData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 })
+
+
                 console.log(responseImage)
                 if (responseImage.success) {
-                    initialFormData.image = responseImage.message
+                    //initialFormData.image = responseImage.message
                     console.log(initialFormData)
                     const responseProduct = await postDatas('crear-producto', initialFormData)
                     console.log(responseProduct)
                     if (responseProduct.success) {
-                        toast.success('Producto creado correctamente', {position: "top-center"})
+                        toast.success('Producto creado correctamente', { position: "top-center" })
                         fetchProducts()
                         setIsFormOpen(false)
                     } else {
-                        toast.error('Error al crear el producto', {position: "top-center"})
+                        toast.error('Error al crear el producto', { position: "top-center" })
                     }
+
                 } else {
-                    toast.error('Error al subir la imagen', {position: "top-center"})
+                    toast.error('Error al subir la imagen', { position: "top-center" })
                 }
-            } catch  {
-                toast.error("Error al crear el producto", {position: "top-center"});
+            } catch {
+                toast.error("Error al crear el producto", { position: "top-center" });
             } finally {
                 setLoading(false);
             }
@@ -240,18 +246,18 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             if (productToDelete !== null) {
                 const responseDelete = await putData('eliminar-producto', { id: productToDelete })
                 if (responseDelete.success) {
-                    toast.success(responseDelete.message, {position: "top-center"})
+                    toast.success(responseDelete.message, { position: "top-center" })
                     fetchProducts()
                 } else {
-                    toast.error(responseDelete.message, {position: "top-center"}    )
+                    toast.error(responseDelete.message, { position: "top-center" })
                 }
                 setIsDeleteDialogOpen(false)
                 setProductToDelete(null)
             }
-        } catch  {
-            toast.error("Error al eliminar el producto", {position: "top-center"})
+        } catch {
+            toast.error("Error al eliminar el producto", { position: "top-center" })
         } finally {
-                setLoading(false);
+            setLoading(false);
         }
     }
 
@@ -355,13 +361,13 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                  */}
                             <div className="space-y-2">
                                 <Label htmlFor="image">Foto</Label>
-                                {
+                                {/** 
                                     currentProduct ? chandePhoto && (
                                         <Input id="image" name="image" type="file" onChange={handleInputChange} />
                                     ) : (
                                         <Input id="image" name="image" type="file" onChange={handleInputChange} />
                                     )
-                                }
+                               */ }
                                 {
                                     currentProduct && (
                                         <div className="flex gap-2">
@@ -397,7 +403,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                         onValueChange={(value) => handleSelectChange(value, "id_category")}
                                     >
 
-                                        
+
                                         <SelectTrigger>
                                             {/**
                                                  * CUANDO LE DEA A EDITAR EL PRODUCTO, EL SELECT NO DEBE ESTAR VACIO
@@ -455,29 +461,29 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-            <Label htmlFor="price">Precio</Label>
-            <Input
-                id="price"
-                name="price"
-                type="text"
-                value={initialFormData.price?.toString() ?? ""}
-                onChange={(e) => handlePriceChange(e, "price")}
-                onBlur={() => handlePriceBlur("price")}
-            />
-        </div>
-        <div className="space-y-2">
-            <Label htmlFor="price_offert">Precio oferta</Label>
-            <Input
-                id="price_offert"
-                name="price_offert"
-                type="text"
-                value={initialFormData.price_offert?.toString() ?? ""}
-                onChange={(e) => handlePriceChange(e, "price_offert")}
-                onBlur={() => handlePriceBlur("price_offert")}
-            />
-        </div>
-    </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="price">Precio</Label>
+                                    <Input
+                                        id="price"
+                                        name="price"
+                                        type="text"
+                                        value={initialFormData.price?.toString() ?? ""}
+                                        onChange={(e) => handlePriceChange(e, "price")}
+                                        onBlur={() => handlePriceBlur("price")}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="price_offert">Precio oferta</Label>
+                                    <Input
+                                        id="price_offert"
+                                        name="price_offert"
+                                        type="text"
+                                        value={initialFormData.price_offert?.toString() ?? ""}
+                                        onChange={(e) => handlePriceChange(e, "price_offert")}
+                                        onBlur={() => handlePriceBlur("price_offert")}
+                                    />
+                                </div>
+                            </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="description">Descripción</Label>
@@ -491,10 +497,10 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                             </div>
                         </div>
                         <DialogFooter className="gap-2">
-                            <Button  variant="outline" onClick={() => setIsFormOpen(false)}>
+                            <Button variant="outline" onClick={() => setIsFormOpen(false)}>
                                 Cancelar
                             </Button>
-                            <Button disabled={loading}   onClick={handleSubmit}>{currentProduct ? "Actualizar" : "Agregar"}</Button>
+                            <Button disabled={loading} onClick={handleSubmit}>{currentProduct ? "Actualizar" : "Agregar"}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

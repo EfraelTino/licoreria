@@ -64,7 +64,7 @@ export default function Caja() {
             {
               cajaAbierta ? (
                 <Button onClick={() => setIsFormOpenDischarge(true)} variant="secondary">
-                  <Minus className="h-4 w-4" /> Registrar Egreso
+                  <Minus className="h-4 w-4" /> Gastos
                 </Button>
               ) : null
             }

@@ -34,7 +34,7 @@ export default function DataUsuario() {
         console.log(response)
         if (response.success) {
             setUser(response.message)
-            if(response.message.id !== userData?.id){
+            if(response.message.id !== userData?.id || userData?.role !== 'Administrador'){
                 navigate('/dashboard/')
             }
         } else {
