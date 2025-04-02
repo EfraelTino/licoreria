@@ -368,9 +368,9 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                 <Label htmlFor="image">Foto</Label>
                                 {
                                     currentProduct ? chandePhoto && (
-                                        <Input id="image" name="image" type="file" onChange={handleInputChange} />
+                                        <Input id="image" name="image" accept="image/*" type="file" onChange={handleInputChange} />
                                     ) : (
-                                        <Input id="image" name="image" type="file" onChange={handleInputChange} />
+                                        <Input id="image" name="image" accept="image/*" type="file" onChange={handleInputChange} />
                                     )
                                 }
                                 {
