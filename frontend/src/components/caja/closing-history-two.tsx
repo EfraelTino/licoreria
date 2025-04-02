@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { AlertCircleIcon, CheckCircleIcon, X } from "lucide-react"
+import {  X } from "lucide-react"
 import { useState } from "react"
 import { ClosingCaja } from "./closing-caja"
 export function ClosingHistoryTwo({ dataCaja, isLoading, error }: {
@@ -56,7 +56,7 @@ export function ClosingHistoryTwo({ dataCaja, isLoading, error }: {
               <TableHead className=" md:table-cell font-bold">Usuario</TableHead>
               <TableHead className="text-left font-bold">Monto Inicial</TableHead>
               <TableHead className="text-left font-bold">Monto Final</TableHead>
-              <TableHead className="text-left">Diferencia</TableHead>
+             {/** <TableHead className="text-left">Diferencia</TableHead> */}
               <TableHead className="text-left">Estado</TableHead>
               <TableHead className=" md:table-cell text-left">Total Ventas</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
@@ -82,7 +82,8 @@ export function ClosingHistoryTwo({ dataCaja, isLoading, error }: {
                   <TableCell className="text-left">S/.{Number(closing.opening_balance).toFixed(2)}</TableCell>
                   <TableCell className="text-left">S/.{Number(closing.closing_balance).toFixed(2)}</TableCell>
 
-                  <TableCell className="text-left">
+                  {/**
+                   * <TableCell className="text-left">
                     <div className="flex items-center justify-start gap-1">
                       {closing.closing_balance < closing.opening_balance ? (
                         <AlertCircleIcon className="h-4 w-4 text-red-500" />
@@ -96,14 +97,20 @@ export function ClosingHistoryTwo({ dataCaja, isLoading, error }: {
 
 
                   </TableCell>
+                   */}
                   <TableCell className="text-left"> {closing.status === "Abierta" ? <span className="text-green-500">{closing.status}</span> : <span className="text-muted-foreground">{closing.status}</span>} </TableCell>
-                  <TableCell className=" text-left">
+                  <TableCell className="text-left">S/.{Number(closing.closing_balance).toFixed(2)}</TableCell>
+
+                  {/**
+                   * 
+                   * <TableCell className=" text-left">
                     S/ {closing.balance_final !== null && closing.balance_final !== undefined
                       ? Number(closing.balance_final).toFixed(2)
                       : (
                         (Number(closing.opening_balance) + Number(closing.closing_balance || 0)).toFixed(2)
                       )}
                   </TableCell>
+                   */}
                   <TableCell className="text-right">
                     {closing.status === "Abierta" ? (
                       <Button onClick={() => handleOpenForm(closing.id)} className="gap-0" size="sm">

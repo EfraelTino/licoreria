@@ -6,8 +6,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TabsContent } from "@radix-ui/react-tabs"
 import { Brand, Categories } from "@/lib/types"
 import { CategoriesPage } from "@/components/product/categories"
-import { BrandsPage } from "@/components/product/brands"
 import { ProductTable } from "@/components/product/product-table"
+{/**import { BrandsPage } from "@/components/product/brands" */}
 
 // Product type definition
 type Product = {
@@ -124,7 +124,7 @@ export default function ProductsPage() {
     useEffect(() => {
         fetchProducts();
         fetchCategories();
-        fetchBrands();
+       fetchBrands();
     }, []);
     const [initialFormData, setInitialFormData] = useState<Product>({
 
@@ -152,17 +152,17 @@ export default function ProductsPage() {
                     <TabsList className="flex justify-center">
                         <TabsTrigger value="productos">Productos</TabsTrigger>
                         <TabsTrigger value="categorias">Categorías</TabsTrigger>
-                        <TabsTrigger value="marcas">Marcas</TabsTrigger>
+                        {/**<TabsTrigger value="marcas">Marcas</TabsTrigger> */}
                     </TabsList>
                 </div>
                 <TabsContent value="categorias" >
                     <CategoriesPage errorCategories={error.errorCategorie} categories={categories} loading={loading} fetchCategories={fetchCategories} />
                 </TabsContent>
-                <TabsContent value="marcas">
+                {/**<TabsContent value="marcas">
      
                      <BrandsPage brand={brands} errorBrands = {error.errorBrands} loading={loading} fetchBrands={fetchBrands} />
              
-                </TabsContent>
+                </TabsContent> */}
                 <TabsContent value="productos" className="">
                     <ProductTable error={error.errorProducts} loading={loading} fetchProducts={fetchProducts} initialFormData={initialFormData} setInitialFormData={setInitialFormData} productos={productos} categories={categories} brands={brands} setLoading={setLoading} fetchCategories={fetchCategories} fetchBrands={fetchBrands} />
 

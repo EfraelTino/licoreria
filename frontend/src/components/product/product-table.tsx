@@ -15,6 +15,7 @@ import { useState } from "react"
 import { postDatas, putData } from "@/api/api"
 import { postDataWithImage } from "@/api/api"
 import { PEN } from "@/lib/pen"
+import { useAuth } from "@/store/auth"
 type Product = {
     id?: number
     name: string
@@ -28,6 +29,7 @@ type Product = {
     id_category?: number
     id_brand?: number
     idProduct?: number | null
+    price_ant?: number | null
     photo?: string | null
 }
 const api = import.meta.env.VITE_API_ASSETS
@@ -38,6 +40,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [currentProduct, setCurrentProduct] = useState<Product | null>(null)
     console.log(productos)
+    const { user } = useAuth()
     const [productToDelete, setProductToDelete] = useState<number | null>(null)
     const handleAddProduct = async () => {
         setCurrentProduct(null)
@@ -45,6 +48,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             name: "",
             name_cat: "",
             name_brand: "",
+            price_ant: 0,
             price: 0,
             price_offert: 0,
             description: "",
@@ -101,12 +105,12 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             [name]: value,
         })
     }
-    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: "price" | "price_offert") => {
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: "price" | "price_offert" | "price_ant") => {
         const rawValue = e.target.value.replace(/[^0-9.]/g, ""); // Solo números y punto
         setInitialFormData({ ...initialFormData, [field]: rawValue }); // Guardar como string temporal
     };
 
-    const handlePriceBlur = (field: "price" | "price_offert") => {
+    const handlePriceBlur = (field: "price" | "price_offert" | "price_ant") => {
         const formattedPrice = PEN(initialFormData[field]?.toString() ?? "").format();
         setInitialFormData({
             ...initialFormData,
@@ -129,7 +133,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     !initialFormData.idProduct
                 ) {
                     console.log(initialFormData)
-                    toast.error("Todos los campos son requeridossss", { position: "top-center" });
+                    toast.error("Todos los campos son requeridos", { position: "top-center" });
                     return;
                 }
                 console.log(initialFormData)
@@ -137,7 +141,6 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     setLoading(true)
                     if (!initialFormData.image) {
                         toast.error("La imagen es requerida", { position: "top-center" })
-
                         return;
                     }
                     const photoData = new FormData();
@@ -217,7 +220,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
 
                 console.log(responseImage)
                 if (responseImage.success) {
-                    //initialFormData.image = responseImage.message
+                    initialFormData.image = responseImage.message
                     console.log(initialFormData)
                     const responseProduct = await postDatas('crear-producto', initialFormData)
                     console.log(responseProduct)
@@ -332,9 +335,11 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                             <TableCell>{product.stock}</TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
-                                                    <Button variant="outline" size="icon" onClick={() => handleEditProduct(product)}>
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Button>
+                                                    {
+                                                        user?.role === "Administrador" ? <Button variant="outline" size="icon" onClick={() => handleEditProduct(product)}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Button> : ''
+                                                    }
                                                     <Button variant="outline" size="icon" onClick={() => openDeleteDialog(product.id ?? 0)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -361,13 +366,13 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                  */}
                             <div className="space-y-2">
                                 <Label htmlFor="image">Foto</Label>
-                                {/** 
+                                {
                                     currentProduct ? chandePhoto && (
                                         <Input id="image" name="image" type="file" onChange={handleInputChange} />
                                     ) : (
                                         <Input id="image" name="image" type="file" onChange={handleInputChange} />
                                     )
-                               */ }
+                                }
                                 {
                                     currentProduct && (
                                         <div className="flex gap-2">
@@ -426,43 +431,54 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name_brand">Marca</Label>
-                                    <Select
-                                        value={initialFormData.id_brand?.toString() ?? ""}
-                                        onValueChange={(value) => handleSelectChange(value, "id_brand")}
-                                    >
-
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Seleccionar marca" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="default" disabled>Seleccionar categoría</SelectItem>
-
-                                            {
-                                                brands.map((brand) => (
-                                                    <SelectItem key={brand.id_brand} value={brand.id_brand?.toString() ?? "default"}>
-                                                        {brand.name_brand}
-                                                    </SelectItem>
-                                                ))
-                                            }
-                                        </SelectContent>
-                                    </Select>
-
-                                </div>
-                                <div className="space-y-2">
+                            <div className="space-y-2">
                                     <Label htmlFor="stock">Cantidad Stock</Label>
                                     {/**
                                          * CUANDO LE DEA A EDITAR EL PRODUCTO, EL INPUT NO DEBE ESTAR VACIO
                                          */}
                                     <Input id="stock" name="stock" type="number" value={initialFormData.stock?.toString() ?? ""} onChange={handleInputChange} />
                                 </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="name_brand">Precio de compra</Label>
+                                    <Input
+                                        id="price_ant"
+                                        name="price_ant"
+                                        type="text"
+                                        value={initialFormData.price_ant?.toString() ?? ""}
+                                        onChange={(e) => handlePriceChange(e, "price_ant")}
+                                        onBlur={() => handlePriceBlur("price_ant")}
+                                    />
+                                    <div className="hidden">
+                                        <Select
+                                            value={initialFormData.id_brand?.toString() || "1"}
+                                            onValueChange={(value) => handleSelectChange(value, "id_brand")}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Seleccionar marca" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value={"default"} disabled>Seleccionar categoría</SelectItem>
+                                                {
+                                                    brands.map((brand) => (
+                                                        <SelectItem key={brand.id_brand} value={brand.id_brand?.toString() || "default"}>
+                                                            {brand.name_brand}
+                                                        </SelectItem>
+                                                    ))
+                                                }
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+
+
+                                </div>
+                                
 
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="price">Precio</Label>
+                                    <Label htmlFor="price">Precio de venta</Label>
                                     <Input
                                         id="price"
                                         name="price"

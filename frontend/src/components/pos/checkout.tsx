@@ -34,10 +34,10 @@ export function Checkout({ total, onComplete, onCancel, cart, paymentMethodSelec
 
   const user = useAuth((state) => state.user)
   const [userDate, setUserData] = useState({
-    names: "",
-    dni: "",
-    phone: "",
-    email: "",
+    names: "Tania",
+    dni: "123456789",
+    phone: "915068001",
+    email: "tania@gmail.com",
   })
 
   const handlePayment = async () => {
