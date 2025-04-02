@@ -34,9 +34,10 @@ type Product = {
 }
 const api = import.meta.env.VITE_API_ASSETS
 
-export const ProductTable = ({ loading, fetchProducts, initialFormData, setInitialFormData, productos, categories, brands, setLoading, fetchCategories, fetchBrands, error }: { loading: boolean, fetchProducts: () => void, initialFormData: Product, setInitialFormData: (product: Product) => void, productos: Product[], categories: Categories[], brands: Brand[], setLoading: (loading: boolean) => void, fetchCategories: () => void, fetchBrands: () => void, error: string }) => {
+export const ProductTable = ({ loading, fetchProducts, initialFormData, setInitialFormData, productos, categories, brands,  fetchCategories, fetchBrands, error }: { loading: boolean, fetchProducts: () => void, initialFormData: Product, setInitialFormData: (product: Product) => void, productos: Product[], categories: Categories[], brands: Brand[],  fetchCategories: () => void, fetchBrands: () => void, error: string }) => {
     const [chandePhoto, setChandePhoto] = useState(false)
     const [isFormOpen, setIsFormOpen] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [currentProduct, setCurrentProduct] = useState<Product | null>(null)
     console.log(productos)
@@ -120,13 +121,13 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
 
     // Handle form submission
     const handleSubmit = async () => {
+        setIsLoading(true)
         if (currentProduct) {
             try {
-                setLoading(true)
                 if (
                     !initialFormData.name ||
                     !initialFormData.id_category ||
-                    !initialFormData.id_brand ||
+                   // !initialFormData.id_brand ||
                     (initialFormData.price ?? 0) <= 0 ||
                     (initialFormData.stock ?? 0) <= 0 ||
                     !initialFormData.description ||
@@ -138,7 +139,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                 }
                 console.log(initialFormData)
                 if (chandePhoto) {
-                    setLoading(true)
+                    setIsLoading(true)
                     if (!initialFormData.image) {
                         toast.error("La imagen es requerida", { position: "top-center" })
                         return;
@@ -152,6 +153,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     })
                     console.log(responseImage)
                     console.log(initialFormData)
+                    initialFormData.id_brand=1;
                     if (responseImage.success) {
                         initialFormData.photo = responseImage.message
                         console.log(initialFormData)
@@ -183,7 +185,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                 console.log(error)
                 toast.error('Error al actualizar el producto', { position: "top-center" })
             } finally {
-                setLoading(false);
+                setIsLoading(false);
                 fetchCategories();
                 fetchBrands();
             }
@@ -192,7 +194,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                 if (
                     !initialFormData.name ||
                     !initialFormData.id_category ||
-                    !initialFormData.id_brand ||
+                   // !initialFormData.id_brand ||
                     (initialFormData.price ?? 0) <= 0 ||
                     (initialFormData.stock ?? 0) <= 0 ||
                     !initialFormData.description ||
@@ -205,7 +207,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     toast.error("El precio de oferta no puede ser mayor al precio", { position: "top-center" });
                     return;
                 }
-
+                initialFormData.id_brand=1;
                 const photoData = new FormData();
                 photoData.append('photo', initialFormData.image)
                 console.log(initialFormData.image)
@@ -220,7 +222,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
 
                 console.log(responseImage)
                 if (responseImage.success) {
-                    initialFormData.image = responseImage.message
+                    initialFormData.photo = responseImage.message
                     console.log(initialFormData)
                     const responseProduct = await postDatas('crear-producto', initialFormData)
                     console.log(responseProduct)
@@ -238,14 +240,14 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             } catch {
                 toast.error("Error al crear el producto", { position: "top-center" });
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         }
     };
     // Handle delete confirmation
     const handleDeleteConfirm = async () => {
         try {
-            setLoading(true)
+            setIsLoading(true)
             if (productToDelete !== null) {
                 const responseDelete = await putData('eliminar-producto', { id: productToDelete })
                 if (responseDelete.success) {
@@ -260,7 +262,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
         } catch {
             toast.error("Error al eliminar el producto", { position: "top-center" })
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     }
 
@@ -448,7 +450,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                         onChange={(e) => handlePriceChange(e, "price_ant")}
                                         onBlur={() => handlePriceBlur("price_ant")}
                                     />
-                                    <div className="hidden">
+                                    <div className="">
                                         <Select
                                             value={initialFormData.id_brand?.toString() || "1"}
                                             onValueChange={(value) => handleSelectChange(value, "id_brand")}
@@ -516,7 +518,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                             <Button variant="outline" onClick={() => setIsFormOpen(false)}>
                                 Cancelar
                             </Button>
-                            <Button disabled={loading} onClick={handleSubmit}>{currentProduct ? "Actualizar" : "Agregar"}</Button>
+                            <Button disabled={isLoading} onClick={handleSubmit}>{currentProduct ? "Actualizar" : "Agregar"}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -531,7 +533,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction disabled={loading} onClick={handleDeleteConfirm}>Eliminar</AlertDialogAction>
+                            <AlertDialogAction disabled={isLoading} onClick={handleDeleteConfirm}>Eliminar</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>

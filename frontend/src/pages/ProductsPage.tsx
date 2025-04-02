@@ -164,7 +164,7 @@ export default function ProductsPage() {
              
                 </TabsContent> */}
                 <TabsContent value="productos" className="">
-                    <ProductTable error={error.errorProducts} loading={loading} fetchProducts={fetchProducts} initialFormData={initialFormData} setInitialFormData={setInitialFormData} productos={productos} categories={categories} brands={brands} setLoading={setLoading} fetchCategories={fetchCategories} fetchBrands={fetchBrands} />
+                    <ProductTable error={error.errorProducts} loading={loading} fetchProducts={fetchProducts} initialFormData={initialFormData} setInitialFormData={setInitialFormData} productos={productos} categories={categories} brands={brands} fetchCategories={fetchCategories} fetchBrands={fetchBrands} />
 
                 </TabsContent>
             </Tabs>
