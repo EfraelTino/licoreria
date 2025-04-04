@@ -450,7 +450,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                         onChange={(e) => handlePriceChange(e, "price_ant")}
                                         onBlur={() => handlePriceBlur("price_ant")}
                                     />
-                                    <div className="">
+                                    <div className="hidden">
                                         <Select
                                             value={initialFormData.id_brand?.toString() || "1"}
                                             onValueChange={(value) => handleSelectChange(value, "id_brand")}
