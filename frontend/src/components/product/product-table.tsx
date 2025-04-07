@@ -31,10 +31,26 @@ type Product = {
     idProduct?: number | null
     price_ant?: number | null
     photo?: string | null
+    presentation?: string | null
+    quantity_per_pack?: number | null
 }
 const api = import.meta.env.VITE_API_ASSETS
+const presentation: { id: string, name: string }[] = [
+    {
+        id: "caja",
+        name: "Caja"
+    },
+    {
+        id: "unidad",
+        name: "Unidad"
+    },
+    {
+        id: "sixpack",
+        name: "Sixpack"
+    }
+]
 
-export const ProductTable = ({ loading, fetchProducts, initialFormData, setInitialFormData, productos, categories, brands,  fetchCategories, fetchBrands, error }: { loading: boolean, fetchProducts: () => void, initialFormData: Product, setInitialFormData: (product: Product) => void, productos: Product[], categories: Categories[], brands: Brand[],  fetchCategories: () => void, fetchBrands: () => void, error: string }) => {
+export const ProductTable = ({ loading, fetchProducts, initialFormData, setInitialFormData, productos, categories, brands, fetchCategories, fetchBrands, error }: { loading: boolean, fetchProducts: () => void, initialFormData: Product, setInitialFormData: (product: Product) => void, productos: Product[], categories: Categories[], brands: Brand[], fetchCategories: () => void, fetchBrands: () => void, error: string }) => {
     const [chandePhoto, setChandePhoto] = useState(false)
     const [isFormOpen, setIsFormOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -56,6 +72,8 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             stock: 0,
             image: null,
             photo: null,
+            presentation: "",
+            quantity_per_pack: 1
         })
         setIsFormOpen(true)
     }
@@ -73,6 +91,8 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             stock: product.stock,
             image: product.image,
             idProduct: product.id,
+            presentation: product.presentation,
+            quantity_per_pack: product.quantity_per_pack
         })
         setIsFormOpen(true)
     }
@@ -127,7 +147,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                 if (
                     !initialFormData.name ||
                     !initialFormData.id_category ||
-                   // !initialFormData.id_brand ||
+                    // !initialFormData.id_brand ||
                     (initialFormData.price ?? 0) <= 0 ||
                     (initialFormData.stock ?? 0) <= 0 ||
                     !initialFormData.description ||
@@ -153,7 +173,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     })
                     console.log(responseImage)
                     console.log(initialFormData)
-                    initialFormData.id_brand=1;
+                    initialFormData.id_brand = 1;
                     if (responseImage.success) {
                         initialFormData.photo = responseImage.message
                         console.log(initialFormData)
@@ -194,7 +214,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                 if (
                     !initialFormData.name ||
                     !initialFormData.id_category ||
-                   // !initialFormData.id_brand ||
+                    // !initialFormData.id_brand ||
                     (initialFormData.price ?? 0) <= 0 ||
                     (initialFormData.stock ?? 0) <= 0 ||
                     !initialFormData.description ||
@@ -207,7 +227,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                     toast.error("El precio de oferta no puede ser mayor al precio", { position: "top-center" });
                     return;
                 }
-                initialFormData.id_brand=1;
+                initialFormData.id_brand = 1;
                 const photoData = new FormData();
                 photoData.append('photo', initialFormData.image)
                 console.log(initialFormData.image)
@@ -394,6 +414,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                     )
                                 }
                             </div>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="name">Nombre</Label>
@@ -430,11 +451,44 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                         </SelectContent>
                                     </Select>
                                 </div>
-                            </div>
 
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                    <Label htmlFor="stock">Cantidad Stock</Label>
+                                <div className="space-y-2">
+                                    <Label htmlFor="presentacion">Presentación</Label>
+                                    <Select
+                                        value={initialFormData.presentation ?? ""}
+                                        onValueChange={(value) => handleSelectChange(value, "presentation")}
+                                    >
+
+
+                                        <SelectTrigger>
+                                            {/**
+                                                 * CUANDO LE DEA A EDITAR EL PRODUCTO, EL SELECT NO DEBE ESTAR VACIO
+                                                 */}
+                                            <SelectValue placeholder="Seleccionar presentación" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="default" disabled>Seleccionar presentación</SelectItem>
+
+                                            {
+                                                presentation.map((item) => (
+                                                    <SelectItem key={item.id} value={item.id?.toString() ?? "default"}>
+                                                        {item.name}
+                                                    </SelectItem>
+                                                ))
+                                            }
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="quantity_per_pack">Cantidad por presentación</Label>
+                                    <Input id="quantity_per_pack" name="quantity_per_pack" type="number" value={initialFormData.quantity_per_pack?.toString() ?? ""} onChange={handleInputChange} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="stock">Cantidad Total (Unidades)</Label>
                                     {/**
                                          * CUANDO LE DEA A EDITAR EL PRODUCTO, EL INPUT NO DEBE ESTAR VACIO
                                          */}
@@ -474,7 +528,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
 
 
                                 </div>
-                                
+
 
                             </div>
 

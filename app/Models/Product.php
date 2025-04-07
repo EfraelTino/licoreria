@@ -15,8 +15,10 @@ class Product
     public function mostrarProductos()
     {
         $stmt = $this->db->prepare("SELECT * 
-FROM products INNER JOIN categories ON products.category_id = categories.id_category
-INNER JOIN brands ON products.brand_id = brands.id_brand 
+FROM products 
+
+INNER JOIN categories ON products.category_id = categories.id_category
+INNER JOIN product_variants ON products.id = product_variants.id_product 
 ORDER BY products.updated_at DESC, products.id DESC;
 ");
         $stmt->execute();

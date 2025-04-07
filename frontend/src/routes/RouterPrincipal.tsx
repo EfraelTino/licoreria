@@ -11,7 +11,7 @@ import DataUsuario from '@/pages/DataUsuario'
 import { useAuth } from '@/store/auth'
 export const RouterPrincipal = () => {
   const user = useAuth((state) => state.user)
-  console.log(user)
+
   return (
     <Routes>
       <Route path="/" element={<Login />} />

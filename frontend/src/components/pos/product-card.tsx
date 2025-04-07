@@ -34,9 +34,6 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             )
           }
           <div className="aspect-square bg-muted relative">
-            <span className="absolute top-2 left-2 bg-green-500 capitalize rounded-full text-white px-2 font-bold text-xs">
-              {product.name_brand}
-            </span>
             {
               priceOffert != 0 && (
                 <div className="absolute top-2 right-2 bg-red-500 rounded-full text-white px-2 font-bold text-xs">

@@ -37,10 +37,9 @@ export default function PosSystem() {
     const [showFilters, setShowFilters] = useState(false)
     const [showCart, setShowCart] = useState(false)
     const [cajaAbierta, setCajaAbierta] = useState(false)
-    console.log(cajaAbierta)
     const fetchCaja = async () => {
         const response = await postDatas('/verificar-caja', {})
-        console.log(response)
+
         if (response.success) {
             setCajaAbierta(true)
         } else {
@@ -53,6 +52,7 @@ export default function PosSystem() {
         try {
             setLoading(true);
             const response = await getDatas("/productos");
+            console.log(response)
             if (response.success) {
                 setError(prev => ({
                     ...prev,
