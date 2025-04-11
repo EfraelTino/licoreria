@@ -104,8 +104,8 @@ class Utils
     
         $img = $this->manager->read($imagen); // Leer la imagen correctamente
     
-        if ($img->width() > 600 || $img->height() > 600) {
-            $img->resize(600, 600, function ($constraint) {
+        if ($img->width() > 400 || $img->height() > 400) {
+            $img->resize(400, 400, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             });
@@ -120,7 +120,7 @@ class Utils
             mkdir($rutaCarpeta, 0777, true);
         }
     
-        $img->save($rutaDestino, 80, 'webp');
+        $img->save($rutaDestino, 50, 'webp');
     
         return $nombreArchivo;
     }

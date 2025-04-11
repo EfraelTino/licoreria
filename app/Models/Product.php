@@ -14,13 +14,7 @@ class Product
     // Obtener todos los productos
     public function mostrarProductos()
     {
-        $stmt = $this->db->prepare("SELECT * 
-FROM products 
-
-INNER JOIN categories ON products.category_id = categories.id_category
-INNER JOIN product_variants ON products.id = product_variants.id_product 
-ORDER BY products.updated_at DESC, products.id DESC;
-");
+        $stmt = $this->db->prepare("SELECT * FROM products INNER JOIN categories ON products.category_id = categories.id_category ORDER BY products.updated_at DESC, products.id DESC;");
         $stmt->execute();
         $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $productos;
@@ -65,8 +59,9 @@ ORDER BY products.updated_at DESC, products.id DESC;
         return $stmt->rowCount();
     }
     //buscar marca por id
-    public function buscarMarcaPorId($id)   {
-        $stmt = $this->db->prepare("SELECT * FROM brands WHERE id_brand = ?");    
+    public function buscarMarcaPorId($id)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM brands WHERE id_brand = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -79,7 +74,7 @@ ORDER BY products.updated_at DESC, products.id DESC;
     }
     //eliminar marca
     public function eliminarMarca($id)
-    {   
+    {
         $stmt = $this->db->prepare("DELETE FROM brands WHERE id_brand = ?");
         $stmt->execute([$id]);
         return $stmt->rowCount();
@@ -89,40 +84,40 @@ ORDER BY products.updated_at DESC, products.id DESC;
     {
         // Verificar si se envió una nueva imagen
         $updatePhoto = isset($data['photo']) ? "photo=?" : "";
-        
+
         // Construir consulta SQL dinámicamente
-        $sql = "UPDATE products SET name=?, description=?, category_id=?, price=?, price_offert=?, stock=?, brand_id=? " 
+        $sql = "UPDATE products SET name=?, description=?, category_id=?, price=?, price_offert=?, stock=?,  price_compra=? "
             . ($updatePhoto ? ", $updatePhoto " : "")
             . "WHERE id=?";
-        
+
         // Preparar consulta
         $stmt = $this->db->prepare($sql);
-    
+
         // Construir parámetros dinámicamente
         $params = [
-            $data['name'], 
-            $data['description'], 
-            $data['id_category'], 
-            $data['price'], 
-            $data['price_offert'], 
-            $data['stock'], 
-            $data['id_brand']
+            $data['name'],
+            $data['description'],
+            $data['id_category'],
+            $data['price'],
+            $data['price_offert'],
+            $data['stock'],
+            $data['price_compra']
         ];
-        
+
         // Agregar `photo` solo si fue enviado
         if ($updatePhoto) {
             $params[] = $data['photo'];
         }
-    
+
         // Agregar ID al final
         $params[] = $data['idProduct'];
-    
+
         // Ejecutar consulta
         $stmt->execute($params);
-    
+
         return $stmt->rowCount();
     }
-    
+
     // Obtener detalle de un producto
     public function detalleProducto($data)
     {
@@ -282,14 +277,45 @@ ORDER BY products.updated_at DESC, products.id DESC;
     public function insertarProducto($data)
     {
         try {
-            $stmt = $this->db->prepare(
-                "INSERT INTO products (name, description, category_id, price, price_offert, stock, photo, brand_id) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            /**
+             * $stmt = $this->db->prepare(
+                "INSERT INTO products (name, description, category_id, stock_unidades, photo, brand_id) 
+                 VALUES (?, ?, ?, ?, ?, ?)"
             );
 
             $success = $stmt->execute([
                 $data['nombre'],
                 $data['descripcion'],
+                $data['categoria_id'],
+                $data['stock'],
+                $data['foto'],
+                $data['brand_id'],
+            ]);
+
+            // Verifica si la inserción fue exitosa
+            if ($success) {
+                // Obtén el ID del último registro insertado
+                $insertProduct = $this->db->lastInsertId();
+                $stmt1 = $this->db->prepare("INSERT INTO product_variants (id_producto, presentation, quantity_per_pack, price_ant, price, price_offert) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt1->execute([$insertProduct, $data['quantity_per_pack'], $data['presentation'], $data['price_ant'], $data['price'], $data['price_offert']]);
+                if ($stmt1) {
+                    return $insertProduct;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+             */
+            $stmt = $this->db->prepare(
+                "INSERT INTO products (name, description, price_compra, category_id, price, price_offert, stock, photo, brand_id) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            );
+
+            $success = $stmt->execute([
+                $data['nombre'],
+                $data['descripcion'],
+                $data['price_ant'],
                 $data['categoria_id'],
                 $data['precio'],
                 $data['precio_oferta'],

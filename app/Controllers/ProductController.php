@@ -55,6 +55,7 @@ class   ProductController
             'precio_oferta' => $data['price_offert'],
             'stock' => $data['stock'],
             'foto' => $data['photo'],
+            'price_ant' => $data['price_compra'],
             'brand_id' => $data['id_brand'],
         ];
 
