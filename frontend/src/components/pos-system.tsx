@@ -14,6 +14,14 @@ import { HedaerGeneral } from "./header-general"
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card } from "./ui/card"
+import currency from "currency.js";
+
+const PEN = (value: number | string) => currency(value, {
+    symbol: "S/",
+    separator: ",",
+    decimal: ".",
+    precision: 2
+});
 
 export default function PosSystem() {
     const [cart, setCart] = useState<Array<{ product: (typeof productos)[0]; quantity: number }>>([])
@@ -37,15 +45,28 @@ export default function PosSystem() {
     const [showFilters, setShowFilters] = useState(false)
     const [showCart, setShowCart] = useState(false)
     const [cajaAbierta, setCajaAbierta] = useState(false)
+    const [priceventa, setPriceventa] = useState<number>(0)
+    const [isPriceModified, setIsPriceModified] = useState(false)
+    const [cajaChecked, setCajaChecked] = useState(false)
+    
     const fetchCaja = async () => {
+        if (cajaChecked) return;
+        
         const response = await postDatas('/verificar-caja', {})
 
         if (response.success) {
             setCajaAbierta(true)
         } else {
-            toast.error(response.message, { position: "top-center" })
             setCajaAbierta(false)
+            toast.error(response.message, { position: "top-center",cancel:{
+                label: 'Cerrar',
+                onClick: () => {
+                  console.log('Cancelar')
+                }
+              } })
         }
+        
+        setCajaChecked(true);
     }
 
     const fetchProducts = async () => {
@@ -115,10 +136,10 @@ export default function PosSystem() {
         }
     }
     useEffect(() => {
+        fetchCaja();
         fetchProducts();
         fetchCategories();
         fetchPaymentMethods();
-        fetchCaja()
     }, []);
 
 
@@ -179,6 +200,13 @@ export default function PosSystem() {
         if (quantity > (product.stock || 0)) {
             toast.error("No hay suficiente stock disponible", {
                 position: "top-center",
+            
+                cancel:{
+                    label: 'Cerrar',
+                    onClick: () => {
+                        console.log('Cancelar')
+                    }
+                }
             })
             return
         }
@@ -194,7 +222,7 @@ export default function PosSystem() {
 
     const subtotal = cart.reduce((sum, item) => sum + (((item.product.price_offert ?? 0) != 0 ? (item.product.price_offert ?? 0) : (item.product.price || 0)) * item.quantity), 0)
     // const tax = subtotal * 0.08 // 8% tax rate
-    const total = subtotal // Definir total para el checkout
+    const total = isPriceModified ? priceventa : subtotal // Usar el precio modificado si está activo
 
     const handleCheckout = () => {
         if (!paymentMethodSelected) {
@@ -213,7 +241,10 @@ export default function PosSystem() {
         }
         setPaymentMethodSelected(paymentMethodSelected)
     }
-
+    const resetPrice = () => {
+        setPriceventa(subtotal)
+        setIsPriceModified(false)
+    }
     const handlePaymentComplete = () => {
         clearCart()
         setShowCheckout(false)
@@ -342,7 +373,7 @@ export default function PosSystem() {
                     </div>
                 </button>
                 {/* Cart Section */}
-                <div className="hidden lg:flex w-96 flex-col border-l">
+                <div className="hidden bg-white  lg:flex w-96 flex-col border-l">
                     <div className="border-b p-4">
                         <h2 className="flex items-center text-lg font-semibold">
                             <ShoppingCart className="mr-2 h-5 w-5" />
@@ -392,7 +423,36 @@ export default function PosSystem() {
                                         </div>
                                         <div className="flex justify-between font-semibold text-lg pt-2 border-t mt-2">
                                             <span>Total</span>
-                                            <span>S/.{subtotal.toFixed(2)}</span>
+                                            <div className="flex items-center gap-2">
+                                                <Input 
+                                                    className="w-24 text-left" 
+                                                    type="number" 
+                                                    onChange={(e) => {
+                                                        const rawValue = e.target.value.replace(/[^0-9.]/g, ""); // Permitir solo números y punto decimal
+                                                        const numValue = parseFloat(rawValue);
+                                                        if (!isNaN(numValue)) {
+                                                            setPriceventa(numValue);
+                                                            setIsPriceModified(true);
+                                                        }
+                                                    }}
+                                                    value={isPriceModified ? priceventa : subtotal}
+                                                    disabled={!cart.length}
+                                                />
+                                                {isPriceModified && (
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        onClick={resetPrice}
+                                                        className="h-8 w-8 p-0"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 3-7.7L3 8" /><path d="M3 3v5h5" /></svg>
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Total Actualizado</span>
+                                            <span>{PEN(isPriceModified ? priceventa : subtotal).format()}</span>
                                         </div>
                                         <div className="space-y-2">
                                             <span className="text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Método de Pago</span>
@@ -487,56 +547,84 @@ export default function PosSystem() {
                             {
                                 !cajaAbierta ? (
                                     <>
-                                    <p className="text-center text-muted-foreground">Abra la caja para empezara  vender</p>
-                                        
+                                        <p className="text-center text-muted-foreground">Abra la caja para empezara  vender</p>
+
                                     </>
                                 ) : <>
-                                <div className="space-y-2">
-                                            <div className="flex  justify-between text-sm">
-                                                <span className="text-muted-foreground">Subtotal</span>
-                                                <span>S/.{subtotal.toFixed(2)}</span>
-                                            </div>
-                                            <div className="flex justify-between font-semibold text-lg pt-2 border-t mt-2">
-                                                <span>Total</span>
-                                                <span>S/.{subtotal.toFixed(2)}</span>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <span className="text-sm font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Método de Pago</span>
-                                                {
-                                                    error.errorPaymentMethod ? (
-                                                        <p className="text-red-500 text-sm text-center py-1">{error.errorPaymentMethod}</p>
-                                                    ) : (
-                                                        <Select onValueChange={handlePaymentMethod}>
-
-                                                            <SelectTrigger id="payment-method">
-                                                                <SelectValue placeholder="Método de pago" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="default" disabled>Seleccionar Método de Pago</SelectItem>
-                                                                {
-                                                                    paymentMethod.map((payment) => (
-                                                                        <SelectItem key={payment.id_payment} value={payment.id_payment?.toString() ?? "default"}>
-                                                                            {payment.name_payment}
-                                                                        </SelectItem>
-                                                                    ))
-                                                                }
-                                                            </SelectContent>
-
-                                                        </Select>
-
-                                                    )
-                                                }
+                                    <div className="space-y-2">
+                                        <div className="flex  justify-between text-sm">
+                                            <span className="text-muted-foreground">Subtotal</span>
+                                            <span>S/.{subtotal.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between font-semibold text-lg pt-2 border-t mt-2">
+                                            <span>Total</span>
+                                            <div className="flex items-center gap-2">
+                                                <Input 
+                                                    type="number" 
+                                                    value={isPriceModified ? priceventa : subtotal} 
+                                                    onChange={(e) => {
+                                                        const rawValue = e.target.value.replace(/[^0-9.]/g, "");
+                                                        const numValue = parseFloat(rawValue);
+                                                        if (!isNaN(numValue)) {
+                                                            setPriceventa(numValue);
+                                                            setIsPriceModified(true);
+                                                        }
+                                                    }}
+                                                    disabled={!cart.length}
+                                                />
+                                                {isPriceModified && (
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        onClick={resetPrice}
+                                                        className="h-8 w-8 p-0"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 3-7.7L3 8" /><path d="M3 3v5h5" /></svg>
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
-
-                                        <div className="mt-4 grid grid-cols-2 gap-2">
-                                            <Button variant="outline" onClick={clearCart} disabled={cart.length === 0}>
-                                                Cancelar venta
-                                            </Button>
-                                            <Button onClick={handleCheckout} disabled={cart.length === 0}>
-                                                Pagar
-                                            </Button>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Total Actualizado</span>
+                                            <span>{PEN(isPriceModified ? priceventa : subtotal).format()}</span>
                                         </div>
+                                        <div className="space-y-2">
+                                            <span className="text-sm font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Método de Pago</span>
+                                            {
+                                                error.errorPaymentMethod ? (
+                                                    <p className="text-red-500 text-sm text-center py-1">{error.errorPaymentMethod}</p>
+                                                ) : (
+                                                    <Select onValueChange={handlePaymentMethod}>
+
+                                                        <SelectTrigger id="payment-method">
+                                                            <SelectValue placeholder="Método de pago" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="default" disabled>Seleccionar Método de Pago</SelectItem>
+                                                            {
+                                                                paymentMethod.map((payment) => (
+                                                                    <SelectItem key={payment.id_payment} value={payment.id_payment?.toString() ?? "default"}>
+                                                                        {payment.name_payment}
+                                                                    </SelectItem>
+                                                                ))
+                                                            }
+                                                        </SelectContent>
+
+                                                    </Select>
+
+                                                )
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-4 grid grid-cols-2 gap-2">
+                                        <Button variant="outline" onClick={clearCart} disabled={cart.length === 0}>
+                                            Cancelar venta
+                                        </Button>
+                                        <Button onClick={handleCheckout} disabled={cart.length === 0}>
+                                            Pagar
+                                        </Button>
+                                    </div>
                                 </>
                             }
 

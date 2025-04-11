@@ -1,4 +1,4 @@
-{/**Using ->  */}
+{/**Using ->  */ }
 import React, { useEffect } from "react"
 import {
     ColumnDef,
@@ -33,9 +33,9 @@ import { Card } from "@/components/ui/card"
 import { getDatas } from "@/api/api"
 
 type Movements = {
-   amount:number;
-   type:string;
-   created_at:string;
+    amount: number;
+    type: string;
+    created_at: string;
 }
 export function Movements() {
 
@@ -55,7 +55,7 @@ export function Movements() {
             console.log(response)
             if (response.success) {
                 //recargar la pagina
-         
+
                 setClients(response.data)
                 setError("");
             } else {
@@ -74,7 +74,7 @@ export function Movements() {
     const columns: ColumnDef<Movements>[] = [
         {
             id: "index",
-            header: "#", 
+            header: "#",
             cell: ({ row }) => (<strong>{row.index + 1}</strong>),
             enableSorting: false,
             enableHiding: false,
@@ -96,22 +96,6 @@ export function Movements() {
             ),
         },
         {
-            id: "tipo",
-            accessorKey: "amount", // Mantenemos accessorKey original
-            header: ({ column }) => (
-                <Button
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                        Tipo
-                    <ArrowUpDown />
-                </Button>
-            ),
-            cell: ({ row }) => (
-                <div>{`${row.original.amount}`}</div>
-            ),
-        },
-        {
             id: "monto",
             accessorKey: "amount", // Mantenemos accessorKey original
             header: ({ column }) => (
@@ -120,6 +104,22 @@ export function Movements() {
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Monto
+                    <ArrowUpDown />
+                </Button>
+            ),
+            cell: ({ row }) => (
+                <div>{`${row.original.amount}`}</div>
+            ),
+        },
+        {
+            id: "tipo",
+            accessorKey: "type", // Mantenemos accessorKey original
+            header: ({ column }) => (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Tipo
                     <ArrowUpDown />
                 </Button>
             ),

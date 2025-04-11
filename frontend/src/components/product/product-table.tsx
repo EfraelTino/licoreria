@@ -31,24 +31,11 @@ type Product = {
     idProduct?: number | null
     price_ant?: number | null
     photo?: string | null
-    presentation?: string | null
     quantity_per_pack?: number | null
+    price_compra?: number | null
 }
 const api = import.meta.env.VITE_API_ASSETS
-const presentation: { id: string, name: string }[] = [
-    {
-        id: "caja",
-        name: "Caja"
-    },
-    {
-        id: "unidad",
-        name: "Unidad"
-    },
-    {
-        id: "sixpack",
-        name: "Sixpack"
-    }
-]
+
 
 export const ProductTable = ({ loading, fetchProducts, initialFormData, setInitialFormData, productos, categories, brands, fetchCategories, fetchBrands, error }: { loading: boolean, fetchProducts: () => void, initialFormData: Product, setInitialFormData: (product: Product) => void, productos: Product[], categories: Categories[], brands: Brand[], fetchCategories: () => void, fetchBrands: () => void, error: string }) => {
     const [chandePhoto, setChandePhoto] = useState(false)
@@ -65,14 +52,13 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             name: "",
             name_cat: "",
             name_brand: "",
-            price_ant: 0,
+            price_compra: 0,
             price: 0,
             price_offert: 0,
             description: "",
             stock: 0,
             image: null,
             photo: null,
-            presentation: "",
             quantity_per_pack: 1
         })
         setIsFormOpen(true)
@@ -83,6 +69,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
         setCurrentProduct(product)
         setInitialFormData({
             name: product.name,
+            price_compra: product.price_compra,
             id_category: product.id_category,
             id_brand: product.id_brand,
             price: product.price,
@@ -91,7 +78,6 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             stock: product.stock,
             image: product.image,
             idProduct: product.id,
-            presentation: product.presentation,
             quantity_per_pack: product.quantity_per_pack
         })
         setIsFormOpen(true)
@@ -126,12 +112,12 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
             [name]: value,
         })
     }
-    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: "price" | "price_offert" | "price_ant") => {
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: "price" | "price_offert" | "price_compra") => {
         const rawValue = e.target.value.replace(/[^0-9.]/g, ""); // Solo números y punto
         setInitialFormData({ ...initialFormData, [field]: rawValue }); // Guardar como string temporal
     };
 
-    const handlePriceBlur = (field: "price" | "price_offert" | "price_ant") => {
+    const handlePriceBlur = (field: "price" | "price_offert" | "price_compra") => {
         const formattedPrice = PEN(initialFormData[field]?.toString() ?? "").format();
         setInitialFormData({
             ...initialFormData,
@@ -193,6 +179,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                 } else {
                     console.log(initialFormData)
                     const responseProduct = await putData('actualizar-producto', initialFormData)
+              
                     if (responseProduct.success) {
                         toast.success(responseProduct.message, { position: "top-center" })
                         fetchProducts()
@@ -309,8 +296,9 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                 <TableHead>Image</TableHead>
                                 <TableHead>Nombre</TableHead>
                                 <TableHead>Categoría</TableHead>
-                                <TableHead>Marca</TableHead>
-                                <TableHead>Precio</TableHead>
+                                {/**<TableHead>Marca</TableHead> */}
+                                <TableHead>Precio de compra</TableHead>
+                                <TableHead>Precio de venta</TableHead>
                                 <TableHead>Descripción</TableHead>
                                 <TableHead>Stock</TableHead>
                                 <TableHead className="text-right">Acciones</TableHead>
@@ -335,7 +323,8 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                             </TableCell>
                                             <TableCell className="font-medium">{product.name}</TableCell>
                                             <TableCell>{product.name_cat}</TableCell>
-                                            <TableCell><span className="capitalize">{product.name_brand}</span></TableCell>
+                                            <TableCell>S/.{Number(product.price_compra).toFixed(2)}</TableCell>
+                                            {/**<TableCell><span className="capitalize">{product.name_brand}</span></TableCell> */}
                                             <TableCell><p className="flex flex-col text-left">
                                                 {product.price_offert != 0 ? (
                                                     <>
@@ -455,40 +444,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="presentacion">Presentación</Label>
-                                    <Select
-                                        value={initialFormData.presentation ?? ""}
-                                        onValueChange={(value) => handleSelectChange(value, "presentation")}
-                                    >
-
-
-                                        <SelectTrigger>
-                                            {/**
-                                                 * CUANDO LE DEA A EDITAR EL PRODUCTO, EL SELECT NO DEBE ESTAR VACIO
-                                                 */}
-                                            <SelectValue placeholder="Seleccionar presentación" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="default" disabled>Seleccionar presentación</SelectItem>
-
-                                            {
-                                                presentation.map((item) => (
-                                                    <SelectItem key={item.id} value={item.id?.toString() ?? "default"}>
-                                                        {item.name}
-                                                    </SelectItem>
-                                                ))
-                                            }
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="quantity_per_pack">Cantidad por presentación</Label>
-                                    <Input id="quantity_per_pack" name="quantity_per_pack" type="number" value={initialFormData.quantity_per_pack?.toString() ?? ""} onChange={handleInputChange} />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="stock">Cantidad Total (Unidades)</Label>
+                                    <Label htmlFor="stock">Stock Total</Label>
                                     {/**
                                          * CUANDO LE DEA A EDITAR EL PRODUCTO, EL INPUT NO DEBE ESTAR VACIO
                                          */}
@@ -497,12 +453,12 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                 <div className="space-y-2">
                                     <Label htmlFor="name_brand">Precio de compra</Label>
                                     <Input
-                                        id="price_ant"
-                                        name="price_ant"
+                                        id="price_compra"
+                                        name="price_compra"
                                         type="text"
-                                        value={initialFormData.price_ant?.toString() ?? ""}
-                                        onChange={(e) => handlePriceChange(e, "price_ant")}
-                                        onBlur={() => handlePriceBlur("price_ant")}
+                                        value={initialFormData.price_compra?.toString() ?? ""}
+                                        onChange={(e) => handlePriceChange(e, "price_compra")}
+                                        onBlur={() => handlePriceBlur("price_compra")}
                                     />
                                     <div className="hidden">
                                         <Select
@@ -528,10 +484,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
 
 
                                 </div>
-
-
                             </div>
-
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="price">Precio de venta</Label>

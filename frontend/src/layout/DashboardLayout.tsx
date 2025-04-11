@@ -18,7 +18,7 @@ export const DashboardLayout = () => {
             <AppSidebar user={user}/>
             <SidebarInset>
           
-                <main className="relative">
+                <main className="relative bg-[#f9f9f9] h-full">
                 <SidebarTrigger  className="absolute"/>
                     <Outlet />
                 </main>

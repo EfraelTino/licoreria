@@ -41,7 +41,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                 </div>
               )
             }
-            <img src={`${api}${product.image}` || "placeholder.svg"} loading="lazy" alt={product.name} className="h-full text-sm w-full object-cover" />
+            <img src={`${api}${product.image}` || "placeholder.svg"} loading="lazy" alt={product.name} className="h-full text-sm w-full object-cover bg-white" />
           </div>
           <div className="p-3">
             <h3 className="font-medium text-sm md:text-md">{product.name}</h3>

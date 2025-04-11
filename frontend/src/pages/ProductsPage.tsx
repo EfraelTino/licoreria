@@ -7,6 +7,7 @@ import { TabsContent } from "@radix-ui/react-tabs"
 import { Brand, Categories } from "@/lib/types"
 import { CategoriesPage } from "@/components/product/categories"
 import { ProductTable } from "@/components/product/product-table"
+import { Card } from "@/components/ui/card"
 {/**import { BrandsPage } from "@/components/product/brands" */}
 
 // Product type definition
@@ -147,7 +148,10 @@ export default function ProductsPage() {
     return (
         <>
             <HedaerGeneral />
-            <Tabs defaultValue="productos" className="container mx-auto p-4 md:p-10 space-y-2">
+ 
+                <div className="container mx-auto p-4 md:p-10 space-y-2">
+                <Card className="p-4 md:p-10">
+                <Tabs defaultValue="productos" >
                 <div className="flex justify-center w-full">
                     <TabsList className="flex justify-center">
                         <TabsTrigger value="productos">Productos</TabsTrigger>
@@ -168,6 +172,9 @@ export default function ProductsPage() {
 
                 </TabsContent>
             </Tabs>
+                </Card>
+
+                </div>
 
         </>
     )

@@ -86,7 +86,7 @@ export function AppSidebar({user}: {user: UserData}) {
                                 alt="Chili POS Logo"
                                 className="w-16 h-16"
                             />
-                            <span className="font-semibold">Easy Chill</span>
+                            {/**<span className="font-semibold">Easy Chill</span> */}
                         </div>
                     </SidebarGroupLabel>
                     <SidebarHeader>
@@ -149,7 +149,7 @@ export function AppSidebar({user}: {user: UserData}) {
                                         <div><p className="truncate text-sm font-medium text-neutral-900">
                                         <strong>Nombres: </strong>  {user.name}
                                         </p><p className="truncate text-sm text-neutral-500">
-                                            <strong>Usuarios: </strong> {user.username}
+                                            <strong>Usuario: </strong> {user.username}
                                         </p></div>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={logout}>
