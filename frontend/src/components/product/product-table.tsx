@@ -323,7 +323,7 @@ export const ProductTable = ({ loading, fetchProducts, initialFormData, setIniti
                                             </TableCell>
                                             <TableCell className="font-medium">{product.name}</TableCell>
                                             <TableCell>{product.name_cat}</TableCell>
-                                            <TableCell>S/.{Number(product.price_compra).toFixed(2)}</TableCell>
+                                            <TableCell>S/.{Number(product.price_compra).toFixed(2) ? Number(product.price_compra).toFixed(2) : 0}</TableCell>
                                             {/**<TableCell><span className="capitalize">{product.name_brand}</span></TableCell> */}
                                             <TableCell><p className="flex flex-col text-left">
                                                 {product.price_offert != 0 ? (
