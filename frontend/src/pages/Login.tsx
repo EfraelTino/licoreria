@@ -65,7 +65,7 @@ export const Login = () => {
 
 
   return (
-    <React.Fragment>
+    <div className='bg-white'>
       <div className="pointer-events-none fixed inset-0 overflow-hidden bg-white transition-opacity duration-300 opacity-60">
         <div className="absolute left-0 top-0 aspect-square w-full overflow-hidden sm:aspect-[2/1] [mask-image:radial-gradient(70%_100%_at_50%_0%,_black_70%,_transparent)] opacity-15">
           <div className="absolute inset-0 saturate-150 bg-general">
@@ -139,7 +139,7 @@ export const Login = () => {
           </CardContent>
         </Card>
       </section>
-    </React.Fragment>
+    </div>
 
   )
 }
